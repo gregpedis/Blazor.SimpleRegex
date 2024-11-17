@@ -48,13 +48,12 @@ public class Parser(List<Token> tokens)
 	// concat -> lazy ( "+" lazy )*
 	private Concat Concat()
 	{
-		var first = Lazy();
-		var or = new Concat([first]);
+		var concat = new Concat([Lazy()]);
 		while (Match(TokenType.CONCAT))
 		{
-			or.Operands.Add(Lazy());
+			concat.Operands.Add(Lazy());
 		}
-		return or;
+		return concat;
 	}
 
 	// lazy -> "lazy(" quantifier ")" | quantifier | factor
@@ -161,7 +160,7 @@ public class Parser(List<Token> tokens)
 		return new(or);
 	}
 
-	// term -> any | start | end | ws | digit | word | boundary | nl | cr | tab | null | literal
+	// term -> any | start | end | ws | digit | word | boundary | nl | cr | tab | null | quote | literal
 	private Expr Term()
 	{
 		var token = Peek();
@@ -179,6 +178,7 @@ public class Parser(List<Token> tokens)
 			TokenType.CR => Cr.Instance,
 			TokenType.TAB => Tab.Instance,
 			TokenType.NULL => Null.Instance,
+			TokenType.QUOTE => Quote.Instance,
 
 			TokenType.LITERAL => new Literal(token.Lexeme[1..^1]), // delete the quotes. "abc" becomes abc.
 			_ => throw Error(token, "Expect Term")
@@ -186,6 +186,8 @@ public class Parser(List<Token> tokens)
 		Advance();
 		return term;
 	}
+
+	// anchor -> start | end | boundary TODO: not quantifiable
 
 	#endregion
 

@@ -1,9 +1,21 @@
 ﻿using SimpleRegex.Parsing.Nodes;
+using System.Text;
 
 namespace SimpleRegex.Parsing;
 
 public static class Interpreter
 {
+	private static readonly HashSet<char> CHARACTERS_TO_ESCAPE =
+	[
+		'(', ')',
+		'[', ']',
+		'[', ']',
+		'.', '^', '$' ,
+		'\\',
+		'?', '*', '+',
+		'|',
+	];
+
 	public static string Interpret(Expr expression) =>
 		expression switch
 		{
@@ -33,60 +45,90 @@ public static class Interpreter
 			Cr => @"\r",
 			Tab => @"\t",
 			Null => @"\0",
+			Quote => "\"\"",
 
 			_ => throw Error($"Invalid expression '{expression}'")
 		};
-	// TODO: this might need stripping of quotes.
 
 	private static string Interpret(Or or) =>
 		string.Join('|', or.Operands.Select(Interpret));
 
 	private static string Interpret(Concat concat) =>
-		string.Join("",concat.Operands.Select(Interpret));
+		string.Join("", concat.Operands.Select(Interpret));
 
 	private static string Interpret(Lazy lazy) =>
-		$"{Interpret(lazy.Value)}?";
+		Interpret(lazy.Value) + '?';
 
+	// TODO: Cannot use quantifiers on anchors. Throw interpreter exception. Applies to [maybe, manyMany, many, exactly, atLeast, between]. Maybe fix it in the parser.
 	private static string Interpret(Maybe maybe) =>
-		$"({Interpret(maybe.Value)})?";													// TODO: Do not always parenthesize
+		Parenthesize(Interpret(maybe.Value)) + '?';
 
 	private static string Interpret(MaybeMany maybeMany) =>
-		$"({Interpret(maybeMany.Value)})*";												// TODO: Do not always parenthesize
+		Parenthesize(Interpret(maybeMany.Value)) + '*';
 
-	private static string Interpret(Many many)											// TODO: Same as above, extract the logic maybe
-	{
-		var inner = Interpret(many.Value);
-		return inner.Length == 1
-			? $"{inner}+"
-			: $"({inner})+";
-	}
+	private static string Interpret(Many many) =>
+		Parenthesize(Interpret(many.Value)) + '+';
 
 	private static string Interpret(Exactly exactly) =>
-		$$"""({{Interpret(exactly.Left)}}){{{exactly.Right}}}""";						// TODO: Do not always parenthesize
+		Parenthesize(Interpret(exactly.Left)) + '{' + exactly.Right + '}';
 
 	private static string Interpret(AtLeast atLeast) =>
-		$$"""({{Interpret(atLeast.Left)}}){{{atLeast.Right}},}""";						// TODO: Do not always parenthesize
+		Parenthesize(Interpret(atLeast.Left)) + '{' + atLeast.Right + ",}";
 
 	private static string Interpret(Between between) =>
-		$$"""({{Interpret(between.Value)}}){{{between.Min}},{{between.Max}}}""";		// TODO: Do not always parenthesize
+		Parenthesize(Interpret(between.Value)) + '{' + between.Min + ',' + between.Max + '}';
 
-	private static string Interpret(Grouping grouping) =>								// TODO: Do not always parenthesize
+	private static string Interpret(Grouping grouping) =>
 		$"({Interpret(grouping.Value)})";
 
-	private static string Interpret(Literal literal) =>									// TODO: Escape escape '\' characters
-		literal.Value;
+	private static string Interpret(Literal literal) =>
+		Escape(literal.Value);
 
 	#region HELPERS
-	// TODO
-	private static string Parenthesize(string x)
+
+	// TODO: Do the anchor filtering a bit better
+	private static string Parenthesize(string value)
 	{
-		return x;
+		// Length<=1 is ok if it is not an anchor.
+		if (value.Length <= 1)
+		{
+			return value is not ("^" or "$") ? value : $"({value})";
+		}
+		// Length==2 is ok if it starts with the escape character "\" and is not an anchor.
+		else if (value.Length == 2)
+		{
+			return value[0] == '\\' && value[1] is not ('b' or 'B') ? value : $"({value})"; // TODO: There is also ["\G", "\A", "\z"]
+		}
+		// Length>2 is ok if it is a group or a character class.
+		else
+		{
+			if (value.StartsWith('(') && value.IndexOf(')') == value.Length - 1) // the expression is a single group.
+			{
+				return value;
+			}
+			else if (value.StartsWith('[') && value.IndexOf(']') == value.Length - 1) // the expression is a single character class.
+			{
+				return value;
+			}
+			else
+			{
+				return $"({value})";
+			}
+		}
 	}
 
-	// TODO:
-	private static string Escape(string x)
+	private static string Escape(string value)
 	{
-		return x;
+		var sb = new StringBuilder();
+		foreach (var c in value)
+		{
+			if (CHARACTERS_TO_ESCAPE.Contains(c))
+			{
+				sb.Append('\\');
+			}
+			sb.Append(c);
+		}
+		return sb.ToString();
 	}
 
 	private static InterpreterException Error(string message) =>

@@ -5,14 +5,13 @@ public enum TokenType
 	// Single character tokens.
 	LEFT_PAREN, RIGHT_PAREN, COMMA, CONCAT, EOF,
 	// Escaped tokens.
-	WHITESPACE, DIGIT, WORD, BOUNDARY, NEWLINE, CR, TAB, NULL,
+	WHITESPACE, DIGIT, WORD, BOUNDARY, NEWLINE, CR, TAB, NULL, QUOTE,
 	// Literals.
 	LITERAL, NUMBER,
 	// Keywords.
 	OR, ANY, EXACTLY, AT_LEAST, BETWEEN, START, END,
 	MAYBE, MAYBE_MANY, MANY, LAZY,
 }
-
 
 // "abc"					-> abc
 // ()						-> precedence
@@ -40,6 +39,7 @@ public enum TokenType
 // cr						-> \r
 // tab						-> \t
 // null						-> \0
+// quote					-> ""
 
 // ---
 
@@ -49,7 +49,7 @@ public enum TokenType
 
 // ---
 
-// not
+// not						-> ???
 // match(..)				-> (?:)
 // capture(..) 				-> (..)
 

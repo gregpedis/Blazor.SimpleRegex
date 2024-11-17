@@ -24,6 +24,7 @@ class Scanner(string source)
 		{ "CR" , TokenType.CR },						// \r
 		{ "TAB" , TokenType.TAB },						// \t
 		{ "NULL" , TokenType.NULL },					// \0
+		{ "QUOTE" , TokenType.QUOTE},					// ""
 
 		// simple quantifiers.
 		{ "MAYBE", TokenType.MAYBE },					// a?
