@@ -32,6 +32,7 @@ internal class Parser(List<Token> tokens)
 		Or();
 
 	#region EXPRESSIONS
+
 	// or -> concat ( "|" concat )*
 	private Or Or()
 	{
@@ -60,9 +61,16 @@ internal class Parser(List<Token> tokens)
 		if (Match(TokenType.LAZY))
 		{
 			Consume(TokenType.LEFT_PAREN, "Expect '(' after lazy");
-			var result = new Lazy(Quantifier());
-			Consume(TokenType.RIGHT_PAREN, "Expect ')' after argument");
-			return result;
+			if (QUANTIFIER_TOKENS.Contains(Peek().Type))
+			{
+				var result = new Lazy(Quantifier());
+				Consume(TokenType.RIGHT_PAREN, "Expect ')' after argument");
+				return result;
+			}
+			else
+			{
+				throw Error(Previous(), "Expect quantifier after '('");
+			}
 		}
 		else if (CheckAny(QUANTIFIER_TOKENS))
 		{
@@ -85,7 +93,7 @@ internal class Parser(List<Token> tokens)
 	{
 		var quantifier = Advance();
 		Consume(TokenType.LEFT_PAREN, $"Expect '(' after {quantifier.Lexeme}");
-		var argument = Or();
+		var argument = VerifyNoAnchor(quantifier, Or());
 		Consume(TokenType.RIGHT_PAREN, $"Expect ')' after {quantifier.Lexeme}'s argument");
 
 		return quantifier.Type switch
@@ -98,17 +106,28 @@ internal class Parser(List<Token> tokens)
 	}
 
 	// precise_quantifier -> exactly_or_atleast | between
-	private Expr PreciseQuantifier() =>
-		Check(TokenType.EXACTLY) || Check(TokenType.AT_LEAST)
-			? ExactlyOrAtLeast()
-			: Between();
+	private Expr PreciseQuantifier()
+	{
+		if (Check(TokenType.EXACTLY) || Check(TokenType.AT_LEAST))
+		{
+			return ExactlyOrAtLeast();
+		}
+		else if (Check(TokenType.BETWEEN))
+		{
+			return Between();
+		}
+		else
+		{
+			throw Error(Peek(), "Expect precise quantifier");
+		}
+	}
 
 	// exactly_or_atleast -> ("exactly" | atleast) "(" or "," number ")"
 	private Expr ExactlyOrAtLeast()
 	{
 		var quantifier = Advance();
 		Consume(TokenType.LEFT_PAREN, $"Expect '(' after {quantifier.Lexeme}");
-		var argument = Or();
+		var argument = VerifyNoAnchor(quantifier, Or());
 		Consume(TokenType.COMMA, $"Expect ',' after {quantifier.Lexeme} first argument");
 		Consume(TokenType.NUMBER, $"Expect number as {quantifier.Lexeme}'s second argument");
 		var number = Previous().Number.Value;
@@ -129,7 +148,7 @@ internal class Parser(List<Token> tokens)
 		Consume(TokenType.BETWEEN, $"Expect '{nameof(TokenType.BETWEEN)}'");
 		Consume(TokenType.LEFT_PAREN, $"Expect '(' after {quantifier.Lexeme}");
 
-		var argument = Or();
+		var argument = VerifyNoAnchor(quantifier, Or());
 
 		Consume(TokenType.COMMA, $"Expect ',' after {quantifier.Lexeme}'s first argument");
 		Consume(TokenType.NUMBER, $"Expect number as {quantifier.Lexeme}'s MIN argument");
@@ -164,14 +183,15 @@ internal class Parser(List<Token> tokens)
 		var token = Peek();
 		Expr term = token.Type switch
 		{
-			TokenType.ANY => Any.Instance,
+			// anchors.
 			TokenType.START => Start.Instance,
 			TokenType.END => End.Instance,
-
+			TokenType.BOUNDARY => Boundary.Instance,
+			// non-anchors.
+			TokenType.ANY => Any.Instance,
 			TokenType.WHITESPACE => Whitespace.Instance,
 			TokenType.DIGIT => Digit.Instance,
 			TokenType.WORD => Word.Instance,
-			TokenType.BOUNDARY => Boundary.Instance,
 			TokenType.NEWLINE => NewLine.Instance,
 			TokenType.CR => Cr.Instance,
 			TokenType.TAB => Tab.Instance,
@@ -185,11 +205,24 @@ internal class Parser(List<Token> tokens)
 		return term;
 	}
 
-	// anchor -> start | end | boundary TODO: not quantifiable
-
 	#endregion
 
 	#region HELPERS
+	// Anchors like [^, $, \b] are not quantifiable.
+	private static Or VerifyNoAnchor(Token quantifier, Or argument)
+	{
+		if (argument.Operands[0] is Concat concat
+			&& concat.Operands[0] is { } anchor
+			&& anchor is Start or End or Boundary)
+		{
+			throw Error(quantifier, $"Expect quantifiable token but got {anchor}");
+		}
+		else
+		{
+			return argument;
+		}
+	}
+
 	private bool Match(params TokenType[] types)
 	{
 		if (Array.Exists(types, Check))
@@ -197,17 +230,22 @@ internal class Parser(List<Token> tokens)
 			Advance();
 			return true;
 		}
-		return false;
+		else
+		{
+			return false;
+		}
 	}
 
-	private Token Consume(TokenType type, string message)
+	private void Consume(TokenType type, string message)
 	{
 		if (Check(type))
 		{
-			return Advance();
+			Advance();
 		}
-
-		throw Error(Peek(), message);
+		else
+		{
+			throw Error(Peek(), message);
+		}
 	}
 
 	private bool Check(TokenType type)
@@ -243,5 +281,6 @@ internal class Parser(List<Token> tokens)
 
 	private static ParsingException Error(Token token, string message) =>
 		new(token, message);
+
 	#endregion
 }

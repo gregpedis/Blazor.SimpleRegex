@@ -68,9 +68,10 @@ or many(any + quote or boundary)";
 
 	// This method will be called from JavaScript when the editor content changes.
 	[JSInvokable]
-	public void OnEditorValueChanged(string input)
+	public void OnEditorValueChanged(string input) // TODO: This only returns the first value, it seems like it does not accept multiline
 	{
 		var compilation = Compiler.Compile(input);
+		Console.WriteLine(input);
 		var result = compilation.Success ? compilation.Regex : compilation.Exception.Message;
 
 		targetText = result;

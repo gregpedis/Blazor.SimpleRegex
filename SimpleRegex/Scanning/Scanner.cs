@@ -28,7 +28,7 @@ internal class Scanner(string source)
 
 		// simple quantifiers.
 		{ "MAYBE", TokenType.MAYBE },					// a?
-		{ "MAYBEMANY", TokenType.OR },					// a*
+		{ "MAYBEMANY", TokenType.MAYBE_MANY },			// a*
 		{ "MANY", TokenType.MANY },						// a+
 		{ "LAZY", TokenType.LAZY },						// a{quantifier}?
 

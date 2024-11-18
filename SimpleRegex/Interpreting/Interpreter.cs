@@ -59,7 +59,6 @@ internal static class Interpreter
 	private static string Interpret(Lazy lazy) =>
 		Interpret(lazy.Value) + '?';
 
-	// TODO: Cannot use quantifiers on anchors. Throw interpreter exception. Applies to [maybe, manyMany, many, exactly, atLeast, between]. Maybe fix it in the parser.
 	private static string Interpret(Maybe maybe) =>
 		Parenthesize(Interpret(maybe.Value)) + '?';
 
@@ -86,18 +85,17 @@ internal static class Interpreter
 
 	#region HELPERS
 
-	// TODO: Do the anchor filtering a bit better
 	private static string Parenthesize(string value)
 	{
-		// Length<=1 is ok if it is not an anchor.
+		// Length<=1 is ALWAYS ok as anchors are NOT quantifiable.
 		if (value.Length <= 1)
 		{
-			return value is not ("^" or "$") ? value : $"({value})";
+			return value;
 		}
-		// Length==2 is ok if it starts with the escape character "\" and is not an anchor.
+		// Length==2 is ok if it starts with the escape character "\", as as anchors are NOT quantifiable.
 		else if (value.Length == 2)
 		{
-			return value[0] == '\\' && value[1] is not ('b' or 'B') ? value : $"({value})"; // TODO: There is also ["\G", "\A", "\z"]
+			return value[0] == '\\' ? value : $"({value})";
 		}
 		// Length>2 is ok if it is a group or a character class.
 		else
