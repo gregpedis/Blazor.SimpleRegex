@@ -1,10 +1,9 @@
 ﻿using SimpleRegex.Parsing.Nodes;
 using SimpleRegex.Scanning;
-using System.Reflection.Metadata.Ecma335;
 
 namespace SimpleRegex.Parsing;
 
-public class Parser(List<Token> tokens)
+internal class Parser(List<Token> tokens)
 {
 	private static readonly HashSet<TokenType> SIMPLE_QUANTIFIER_TOKENS =
 	[
@@ -29,7 +28,6 @@ public class Parser(List<Token> tokens)
 	private readonly List<Token> tokens = tokens;
 	private int current = 0;
 
-	// for REPL Expression parsing
 	public Expr ParseExpression() =>
 		Or();
 

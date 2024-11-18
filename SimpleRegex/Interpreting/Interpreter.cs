@@ -1,9 +1,9 @@
-﻿using SimpleRegex.Parsing.Nodes;
-using System.Text;
+﻿using System.Text;
+using SimpleRegex.Parsing.Nodes;
 
-namespace SimpleRegex.Parsing;
+namespace SimpleRegex.Interpreting;
 
-public static class Interpreter
+internal static class Interpreter
 {
 	private static readonly HashSet<char> CHARACTERS_TO_ESCAPE =
 	[
@@ -135,3 +135,4 @@ public static class Interpreter
 		new(message);
 	#endregion
 }
+

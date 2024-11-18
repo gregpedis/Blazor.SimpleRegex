@@ -1,0 +1,83 @@
+﻿@page "/"
+@inject IJSRuntime JSRuntime
+
+<PageTitle>SimpleRegex</PageTitle>
+
+<h1>SimpleRegex</h1>
+<hr />
+
+<h4>Greetings, traveller!</h4>
+<br />
+
+@* INTRO *@
+<p>
+	This application aims to simplify the use of regular expressions, by implementing a thin wrapper over them.
+	<br />
+	<br />
+	If you are interested in the implementation and the language syntax, click <a href="https://github.com/gregpedis/SimpleRegex/tree/master">here</a>.
+</p>
+
+@* INPUT *@
+<div>
+	<hr />
+	<label>Insert your expression here.</label>
+	<hr />
+	<div id="editor" style="height: 500px; width: 100%;"></div>
+</div>
+
+@* OUTPUT *@
+<div>
+	<hr />
+	<label for="target">Regular expression generated.</label>
+	<hr />
+	<textarea style="border:none; color:#b4b4b4; background-color:#1e1e1e; width:100%" readonly>
+		@targetText
+	</textarea>
+</div>
+
+@code {
+
+	// TODO: Extract styling above this to app.css
+	private DotNetObjectReference<Index> _dotNetHelper;
+	private string targetText = string.Empty;
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			_dotNetHelper = DotNetObjectReference.Create(this);
+
+
+			// TODO: Add this when comments are supported
+			//This is a valid expression:
+			var initialValue = @"
+start + between(""hello there"", 42, 69)
+or lazy(exactly(""12"", 3))
+or many(any + quote or boundary)";
+
+			// found in monaco-editor.js
+			await JSRuntime.InvokeVoidAsync(
+				"monacoInterop.initializeEditor",
+				"editor",
+				initialValue,
+				_dotNetHelper);
+
+			OnEditorValueChanged(initialValue);
+		}
+	}
+
+	// This method will be called from JavaScript when the editor content changes.
+	[JSInvokable]
+	public void OnEditorValueChanged(string input)
+	{
+		var compilation = Compiler.Compile(input);
+		var result = compilation.Success ? compilation.Regex : compilation.Exception.Message;
+
+		targetText = result;
+		StateHasChanged(); // Refresh the UI to show the updated value.
+	}
+
+	public void Dispose() =>
+		_dotNetHelper?.Dispose();
+}
+

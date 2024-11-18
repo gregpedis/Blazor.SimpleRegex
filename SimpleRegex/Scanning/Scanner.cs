@@ -1,6 +1,6 @@
 ﻿namespace SimpleRegex.Scanning;
 
-class Scanner(string source)
+internal class Scanner(string source)
 {
 	private readonly string source = source;
 	private readonly List<Token> tokens = [];

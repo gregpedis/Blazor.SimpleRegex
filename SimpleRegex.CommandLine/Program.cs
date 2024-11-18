@@ -1,7 +1,6 @@
 ﻿using SimpleRegex;
-using SimpleRegex.Parsing;
-using SimpleRegex.Parsing.Nodes;
 using SimpleRegex.Scanning;
+using SimpleRegex.Parsing.Nodes;
 
 var shouldPrintTokens = true;
 var shouldPrintTree = true;
@@ -9,38 +8,20 @@ var shouldPrintTree = true;
 while (true)
 {
 	Console.Write("> ");
-	try
-	{
-		var tokens = GetTokens();
-		PrintTokens(tokens);
-
-		var tree = new Parser(tokens).ParseExpression();
-		PrintTree(tree);
-
-		PrintTitle("REGEX");
-		var regex = Interpreter.Interpret(tree);
-		Console.WriteLine(regex);
-	}
-	catch (ScanningException ex)
-	{
-		Console.WriteLine(ex.Message);
-	}
-	catch (ParsingException ex)
-	{
-		Console.WriteLine(ex.Message);
-	}
-	catch (InterpreterException ex)
-	{
-		Console.WriteLine(ex.Message);
-	}
-}
-
-static List<Token> GetTokens()
-{
 	var input = Console.ReadLine();
-	var scanner = new Scanner(input);
-	var tokens = scanner.ScanTokens();
-	return tokens;
+	var compilation = Compiler.Compile(input);
+
+	if (compilation.Success)
+	{
+		PrintTokens(compilation.Tokens);
+		PrintTree(compilation.Tree);
+		PrintTitle("REGEX");
+		Console.WriteLine(compilation.Regex);
+	}
+	else
+	{
+		Console.WriteLine(compilation.Exception.Message);
+	}
 }
 
 void PrintTokens(List<Token> tokens)
