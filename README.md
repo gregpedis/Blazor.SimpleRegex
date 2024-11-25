@@ -11,8 +11,6 @@ A simple language parser that compiles an expression to a regex.
 
 ## TODO
 
-- Add tests
-- Add sonar
 - Support character classes
 - Support comments
 - Support assignments

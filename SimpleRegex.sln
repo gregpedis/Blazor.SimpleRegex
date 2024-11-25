@@ -10,9 +10,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleRegex.CommandLine", "SimpleRegex.CommandLine\SimpleRegex.CommandLine.csproj", "{C569DF0E-6A23-4C42-9685-986FB985A67D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleRegex.CommandLine", "SimpleRegex.CommandLine\SimpleRegex.CommandLine.csproj", "{C569DF0E-6A23-4C42-9685-986FB985A67D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleRegex.Blazor", "SimpleRegex.Blazor\SimpleRegex.Blazor.csproj", "{2E34254E-DE88-4F44-BFDE-32B79D7B345F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleRegex.Blazor", "SimpleRegex.Blazor\SimpleRegex.Blazor.csproj", "{2E34254E-DE88-4F44-BFDE-32B79D7B345F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleRegex.Test", "SimpleRegex.Test\SimpleRegex.Test.csproj", "{B35C2A1D-B264-4A0B-8833-CE8417EF2902}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,6 +34,10 @@ Global
 		{2E34254E-DE88-4F44-BFDE-32B79D7B345F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2E34254E-DE88-4F44-BFDE-32B79D7B345F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2E34254E-DE88-4F44-BFDE-32B79D7B345F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B35C2A1D-B264-4A0B-8833-CE8417EF2902}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B35C2A1D-B264-4A0B-8833-CE8417EF2902}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B35C2A1D-B264-4A0B-8833-CE8417EF2902}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B35C2A1D-B264-4A0B-8833-CE8417EF2902}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

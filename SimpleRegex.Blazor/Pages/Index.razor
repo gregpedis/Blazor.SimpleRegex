@@ -39,7 +39,7 @@
 @code {
 
 	// TODO: Extract styling above this to app.css
-	private DotNetObjectReference<Index> _dotNetHelper = default!;
+	private DotNetObjectReference<Index> _dotNetHelper;
 	private string targetText = string.Empty;
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
