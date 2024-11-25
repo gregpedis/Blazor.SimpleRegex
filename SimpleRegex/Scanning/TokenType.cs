@@ -25,11 +25,12 @@ public enum TokenType
 // maybe("abc")				-> (abc)?
 // maybeMany("abc")			-> (abc)*
 // many("abc")				-> (abc)+
-// lazy(many("abc"))		-> (abc)+?
 
 // exactly("abc", 3)		-> (abc){3}
 // atLeast("abc", 3)		-> (abc){3,}
 // between("abc", 3, 6)		-> (abc){3,6}
+
+// lazy(many("abc"))		-> (abc)+?
 
 // whitespace, ws			-> \s
 // digit					-> \d
@@ -43,20 +44,26 @@ public enum TokenType
 
 // ---
 
-// anyOf "abc"				-> [abc]
-// range, rangeof "az", "AZ"-> [a-zA-Z]
+// anyOf("abc")				-> [abc]
+// range("az")				-> [a-z]
 // ???						-> [a-zA]
 
 // ---
 
-// not						-> ???
-// match(..)				-> (?:)
-// capture(..) 				-> (..)
+// match("abc")				-> (?:abc)
+// capture("abc", "name")	-> (?'name'abc) or (?<name>abc)
+// capture("abc") 			-> (abc)
+
+// ---
+
+// notAnyOf("abc")			-> [^abc]
+// notMatch("abc")			-> (?!abc)
+// notdigit					-> \D
 
 // ---
 
 // EXAMPLE:
-// start or maybe( (exactly(3, "12")) or many("34") )
+// start or maybe( (exactly("hello", 12)) or many("34") )
 
 
 /*
