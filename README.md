@@ -12,7 +12,6 @@ A simple language parser that compiles an expression to a regex.
 ## TODO
 
 - Support character classes
-- Support comments
 - Support assignments
 - Add description of grammar and operator/quantifiers on readme.
 - Add description of grammar and operator/quantifiers on blazor.

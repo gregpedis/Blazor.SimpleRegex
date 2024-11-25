@@ -137,7 +137,7 @@ internal class Parser(List<Token> tokens)
 		{
 			TokenType.EXACTLY => new Exactly(argument, number),
 			TokenType.AT_LEAST => new AtLeast(argument, number),
-			_ => throw Error(quantifier, "Expect EXACTLY or ATLEAST"),
+			_ => throw Error(quantifier, "Expect 'exactly' or 'atleast'"),
 		};
 	}
 

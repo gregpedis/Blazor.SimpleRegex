@@ -1,4 +1,7 @@
-﻿namespace SimpleRegex.Scanning;
+﻿
+using System.ComponentModel.Design;
+
+namespace SimpleRegex.Scanning;
 
 internal class Scanner(string source)
 {
@@ -80,7 +83,11 @@ internal class Scanner(string source)
 				line++;
 				break;
 
-			default: throw Error($"Unexpected character {c}");
+			case '/':
+				SkipComment();
+				break;
+
+			default: throw Error($"Unexpected character '{c}'");
 		}
 	}
 
@@ -127,6 +134,22 @@ internal class Scanner(string source)
 			? reserved
 			: throw Error($"Unexpected identifier '{text}'");
 		AddToken(type);
+	}
+
+	private void SkipComment()
+	{
+		if (Peek() == '/')
+		{
+			Advance();
+			while (!IsAtEnd() && Peek() != '\n')
+			{
+				Advance();
+			}
+		}
+		else
+		{
+			throw Error($"Expected second '/'");
+		}
 	}
 
 	private char Advance() =>

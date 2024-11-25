@@ -5,27 +5,29 @@ namespace SimpleRegex.Test;
 [TestClass]
 public class CompilerTests
 {
-	[TestMethod]
-	public void Compile_ScanningError()
+	[DataTestMethod]
+	[DataRow("start $", "Unexpected character '$' at line 1.")]
+	[DataRow("start or \"hey", "Unterminated string at line 1.")]
+	[DataRow("start\nor \n INVALID", "Unexpected identifier 'INVALID' at line 3.")]
+	[DataRow("start /or end", "Expected second '/' at line 1.")]
+	public void Compile_ScanningError(string input, string error)
 	{
-		var input = """
-			start or
-			INVALID
-			""";
-
 		var output = Compiler.Compile(input);
-
-		AssertFailure<ScanningException>(output, "Scanning Error: Unexpected identifier 'INVALID' at line 2.");
+		AssertFailure<ScanningException>(output, $"Scanning Error: {error}");
 	}
 
-	[TestMethod]
-	public void Compile_ParsingError()
+	[DataTestMethod]
+	[DataRow("lazy(any)", "Expect quantifier after '(' at token [LEFT_PAREN] '(' at line 1.")]
+	[DataRow("exactly(start, 42)", "Expect quantifiable token but got START at token [EXACTLY] 'exactly' at line 1.")]
+	[DataRow("atleast(end, 42)", "Expect quantifiable token but got END at token [AT_LEAST] 'atleast' at line 1.")]
+	[DataRow("between(boundary, 3, 42)", "Expect quantifiable token but got BOUNDARY at token [BETWEEN] 'between' at line 1.")]
+	[DataRow("maybe(start)", "Expect quantifiable token but got START at token [MAYBE] 'maybe' at line 1.")]
+	[DataRow("maybemany(end)", "Expect quantifiable token but got END at token [MAYBE_MANY] 'maybemany' at line 1.")]
+	[DataRow("many(boundary)", "Expect quantifiable token but got BOUNDARY at token [MANY] 'many' at line 1.")]
+	public void Compile_ParsingError(string input, string error)
 	{
-		var input = "lazy(any)";
-
 		var output = Compiler.Compile(input);
-
-		AssertFailure<ParsingException>(output, "Parsing Error: Expect quantifier after '(' at token [LEFT_PAREN] '(' #1.");
+		AssertFailure<ParsingException>(output, $"Parsing Error: {error}");
 	}
 
 	[TestMethod]
@@ -52,6 +54,24 @@ public class CompilerTests
 		var output = Compiler.Compile(input);
 
 		AssertSuccess(output,@"^(hello there){42,69}|(12){3}?|(.""""|\b)+");
+	}
+
+	[TestMethod]
+	public void Compile_CommentsIgnored()
+	{
+		var input = """
+			// This is a comment 1
+			"a"
+			// This is a comment 2
+			or
+			// This is a comment "b" or
+			"c"
+			// This is a comment 3
+			""";
+
+		var output = Compiler.Compile(input);
+
+		AssertSuccess(output, "a|c");
 	}
 
 	private static void AssertSuccess(CompilationResult result, string regex)
