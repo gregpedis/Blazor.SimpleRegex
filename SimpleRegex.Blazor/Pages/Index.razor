@@ -1,5 +1,6 @@
 ﻿@page "/"
 @inject IJSRuntime JSRuntime
+@implements IDisposable
 
 <PageTitle>SimpleRegex</PageTitle>
 
@@ -38,7 +39,7 @@
 @code {
 
 	// TODO: Extract styling above this to app.css
-	private DotNetObjectReference<Index> _dotNetHelper;
+	private DotNetObjectReference<Index> _dotNetHelper = default!;
 	private string targetText = string.Empty;
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)

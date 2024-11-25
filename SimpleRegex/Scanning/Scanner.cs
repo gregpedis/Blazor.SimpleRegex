@@ -138,9 +138,6 @@ internal class Scanner(string source)
 	private char Peek() =>
 		IsAtEnd() ? '\0' : source[current];
 
-	private char PeekNext() =>
-		current + 1 >= source.Length ? '\0' : source[current + 1];
-
 	private void AddToken(TokenType type, int? literal = null)
 	{
 		var text = source[start..current];
