@@ -10,32 +10,43 @@ on:
 
 permissions:
   contents: write
-  
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # Checkout the code
       - uses: actions/checkout@v2
 
-      # Install .NET Core SDK
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 8.0.x
-          
-      # Install dotnet wasm buildtools workload
-      - name: Install .NET WASM Build Tools
+
+      - name: install .NET WASM Build Tools
         run: dotnet workload install wasm-tools
-          
-      # Publishes Blazor project to the release-folder
+
+      - name: install .NET SonarScanner
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      - name: install dotnet-coverage
+        run: dotnet tool install --global dotnet-coverage
+
+      - name: scanner begin
+        run: dotnet sonarscanner begin /k:"gregpedis_simpleregex" /o:"gregpedis" /d:sonar.branch.name="main" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml
+
       - name: Publish .NET Core Project
         run: dotnet publish SimpleRegex.Blazor/SimpleRegex.Blazor.csproj -c:Release -p:GHPages=true -o release --nologo
 
-      - name: ls
+      - name: ls wwwroot
         run: ls release/wwwroot
 
-      - name: Commit wwwroot to GitHub Pages
+      # - name: Test
+      #   run: dotnet-coverage collect "dotnet test" -f xml -o "coverage.xml"
+
+      - name: scanner end
+        run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+
+      - name: commit wwwroot to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@3.7.1
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
