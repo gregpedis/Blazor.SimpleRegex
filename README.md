@@ -11,13 +11,11 @@ A simple language parser that compiles an expression to a regex.
 
 ## TODO
 
-- Support character classes
-- Support matches and captures
 - Support "not" cases
+- Fix TODOs
 
 - Add description of grammar and operator/quantifiers on readme.
 - Add description of grammar and operator/quantifiers on blazor.
 - Change favicon to something with an "R" or an "SR".
 
-- Make a dynamic link to regex101.
 - Support assignments

@@ -2,13 +2,13 @@
 
 public class StaticExpr<T> : Expr where T : StaticExpr<T>, new()
 {
-	public static T Instance => new();
+	public static T Instance { get; } = new();
 
 	public override string ToString() =>
 		GetType().SimpleName();
 }
 
-public class Anchor<T> : StaticExpr<T> where T: StaticExpr<T>, new();
+public class Anchor<T> : StaticExpr<T> where T : StaticExpr<T>, new();
 
 public class Any : StaticExpr<Any>;
 public class Whitespace : StaticExpr<Whitespace>;

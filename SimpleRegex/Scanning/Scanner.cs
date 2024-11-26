@@ -40,6 +40,15 @@ internal class Scanner(string source)
 		{ "ATLEAST", TokenType.AT_LEAST },				// a{3,}
 		{ "BETWEEN", TokenType.BETWEEN },				// a{3,6}
 
+		// character classes.
+		{ "RANGE", TokenType.RANGE },					// a-z
+		{ "ANYOF", TokenType.ANY_OF },					// [a-zA]
+		{ "NOTANYOF", TokenType.NOT_ANY_OF },			// [^a-zA]
+
+		// group constructs.
+		{ "CAPTURE", TokenType.CAPTURE },				// (abc) or (?<name>abc)
+		{ "MATCH", TokenType.NOT_MATCH },				// (?:abc)
+		{ "NOTMATCH", TokenType.NOT_MATCH },			// (?!abc)
 	};
 
 	private int start = 0;

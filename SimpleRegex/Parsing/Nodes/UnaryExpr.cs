@@ -10,8 +10,11 @@ public class UnaryExpr<T>(T value) : Expr
 
 public class UnaryExpr(Expr value) : UnaryExpr<Expr>(value);
 
-public class Grouping(Expr value) : UnaryExpr(value);
+public class Match(Expr value) : UnaryExpr(value);
+public class Capture(Expr value) : UnaryExpr(value);
+
 public class Lazy(Expr value) : UnaryExpr(value);
+
 public class Maybe(Expr value) : UnaryExpr(value);
 public class MaybeMany(Expr value) : UnaryExpr(value);
 public class Many(Expr value) : UnaryExpr(value);

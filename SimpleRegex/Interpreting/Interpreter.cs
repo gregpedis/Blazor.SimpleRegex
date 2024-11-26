@@ -1,5 +1,7 @@
-﻿using System.Text;
+﻿using System.Net.NetworkInformation;
+using System.Text;
 using SimpleRegex.Parsing.Nodes;
+using Range = SimpleRegex.Parsing.Nodes.Range;
 
 namespace SimpleRegex.Interpreting;
 
@@ -31,7 +33,14 @@ internal static class Interpreter
 			AtLeast atLeast => Interpret(atLeast),
 			Between between => Interpret(between),
 
-			Grouping grouping => Interpret(grouping),
+			Match match => Interpret(match),
+			Capture capture => Interpret(capture),
+			NamedCapture namedCapture => Interpret(namedCapture),
+
+			AnyOf anyOf => Interpret(anyOf),
+			NotAnyOf notAnyOf => Interpret(notAnyOf),
+			Range range => Interpret(range),
+
 			Literal literal => Interpret(literal),
 
 			Any => ".",
@@ -77,8 +86,34 @@ internal static class Interpreter
 	private static string Interpret(Between between) =>
 		Parenthesize(Interpret(between.Value)) + '{' + between.Min + ',' + between.Max + '}';
 
-	private static string Interpret(Grouping grouping) =>
-		$"({Interpret(grouping.Value)})";
+	private static string Interpret(Match match) =>
+		$"(?:{Interpret(match.Value)})";
+
+	private static string Interpret(Capture capture) =>
+		$"({Interpret(capture.Value)})";
+
+	private static string Interpret(NamedCapture namedCapture) =>
+		$"(?<{Interpret(namedCapture.Right)}>{Interpret(namedCapture.Left)})";
+
+	private static string Interpret(AnyOf anyOf) =>
+		$"[{string.Join("", anyOf.Operands.Select(Interpret))}]";
+
+	private static string Interpret(NotAnyOf notAnyOf) =>
+		$"[^{string.Join("", notAnyOf.Operands.Select(Interpret))}]";
+
+	private static string Interpret(Range range)
+	{
+		if (range.Left.Value.Length != 1)
+		{
+			throw Error($"Invalid expression '{range.Left.Value}'. Range's left argument is expected to be a single character");
+		}
+		if (range.Right.Value.Length != 1)
+		{
+			throw Error($"Invalid expression '{range.Right.Value}'. Range's right argument is expected to be a single character");
+		}
+
+		return $"{Interpret(range.Left)}-{Interpret(range.Right)}";
+	}
 
 	private static string Interpret(Literal literal) =>
 		Escape(literal.Value);

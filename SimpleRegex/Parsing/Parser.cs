@@ -1,5 +1,6 @@
 ﻿using SimpleRegex.Parsing.Nodes;
 using SimpleRegex.Scanning;
+using Range = SimpleRegex.Parsing.Nodes.Range;
 
 namespace SimpleRegex.Parsing;
 
@@ -129,14 +130,13 @@ internal class Parser(List<Token> tokens)
 		Consume(TokenType.LEFT_PAREN, $"Expect '(' after {quantifier.Lexeme}");
 		var argument = VerifyNoAnchor(quantifier, Or());
 		Consume(TokenType.COMMA, $"Expect ',' after {quantifier.Lexeme} first argument");
-		Consume(TokenType.NUMBER, $"Expect number as {quantifier.Lexeme}'s second argument");
-		var number = Previous().Number.Value;
+		var number = Consume(TokenType.NUMBER, $"Expect number as {quantifier.Lexeme}'s second argument");
 		Consume(TokenType.RIGHT_PAREN, $"Expect ')' after {quantifier.Lexeme}'s second argument");
 
 		return quantifier.Type switch
 		{
-			TokenType.EXACTLY => new Exactly(argument, number),
-			TokenType.AT_LEAST => new AtLeast(argument, number),
+			TokenType.EXACTLY => new Exactly(argument, number.Number.Value),
+			TokenType.AT_LEAST => new AtLeast(argument, number.Number.Value),
 			_ => throw Error(quantifier, "Expect 'exactly' or 'atleast'"),
 		};
 	}
@@ -144,37 +144,91 @@ internal class Parser(List<Token> tokens)
 	// between-> "between" "(" or "," number "," number ")"
 	private Between Between()
 	{
-		var quantifier = Peek();
-		Consume(TokenType.BETWEEN, $"Expect '{nameof(TokenType.BETWEEN)}'");
+		var quantifier = Consume(TokenType.BETWEEN, $"Expect '{nameof(TokenType.BETWEEN)}'");
 		Consume(TokenType.LEFT_PAREN, $"Expect '(' after {quantifier.Lexeme}");
 
 		var argument = VerifyNoAnchor(quantifier, Or());
 
 		Consume(TokenType.COMMA, $"Expect ',' after {quantifier.Lexeme}'s first argument");
-		Consume(TokenType.NUMBER, $"Expect number as {quantifier.Lexeme}'s MIN argument");
-		var min = Previous().Number.Value;
+		var min = Consume(TokenType.NUMBER, $"Expect number as {quantifier.Lexeme}'s MIN argument");
 
 		Consume(TokenType.COMMA, $"Expect ',' after {quantifier.Lexeme}'s second argument");
-		Consume(TokenType.NUMBER, $"Expect number as {quantifier.Lexeme}'s MAX argument");
-		var max = Previous().Number.Value;
+		var max = Consume(TokenType.NUMBER, $"Expect number as {quantifier.Lexeme}'s MAX argument");
 
 		Consume(TokenType.RIGHT_PAREN, $"Expect ')' after {quantifier.Lexeme}'s last argument");
-		return new Between(argument, min, max);
+		return new Between(argument, min.Number.Value, max.Number.Value);
 	}
 
-	// factor -> grouping | term
+	// factor -> group | character_class | term
 	private Expr Factor() =>
-		Check(TokenType.LEFT_PAREN)
-			? Grouping()
+		Peek().Type switch
+		{
+			TokenType.MATCH or TokenType.CAPTURE => Group(),
+			TokenType.ANY_OF or TokenType.NOT_ANY_OF => CharacterClass(),
+			_ => Term()
+		};
+
+	// group -> "match" "(" or ")" | "capture" "(" or ("," literal)? ")" // TODO: Fix this
+	private Expr Group()
+	{
+		var group = Advance();
+		Consume(TokenType.LEFT_PAREN, $"Expect '(' after {group.Lexeme}");
+
+		var expression = Or();
+		Literal name = Match(TokenType.COMMA)
+			? Literal(Consume(TokenType.LITERAL, $"Expect literal as {group.Lexeme}'s second argument"))
+			: null;
+
+		Consume(TokenType.RIGHT_PAREN, $"Expect ')' after {group.Lexeme}'s arguments");
+		return group.Type switch
+		{
+			TokenType.MATCH when name is null => new Match(expression),
+			TokenType.MATCH when name is not null => throw Error(group, $"'match' cannot specify a 'name' argument because it is not a 'capture'"),
+			TokenType.CAPTURE when name is null => new Capture(expression),
+			TokenType.CAPTURE when name is not null => new NamedCapture(expression, name),
+			_ => throw Error(group, $"Expect '{TokenType.MATCH}' or '{TokenType.CAPTURE}'"),
+		};
+	}
+
+	// character_class -> ("anyof" | "notanyof") "(" anyof_argument ("," anyof_argument)* ")"
+	private VariadicExpr CharacterClass()
+	{
+		var characterClass = Advance();
+		Consume(TokenType.LEFT_PAREN, $"Expect '(' after {characterClass.Lexeme}");
+
+		var arguments = new List<Expr> { AnyOfArgument() };
+		while (Match(TokenType.COMMA))
+		{
+			arguments.Add(AnyOfArgument());
+		}
+
+		Consume(TokenType.RIGHT_PAREN, $"Expect ')' after {characterClass.Lexeme}'s last argument");
+		return characterClass.Type switch
+		{
+			TokenType.ANY_OF => new AnyOf(arguments),
+			TokenType.NOT_ANY_OF => new NotAnyOf(arguments),
+			_ => throw Error(characterClass, $"Expect '{TokenType.ANY_OF}' or '{TokenType.NOT_ANY_OF}'"),
+		};
+	}
+
+	// anyof_argument -> range | term
+	private Expr AnyOfArgument() =>
+		Check(TokenType.RANGE)
+			? Range()
 			: Term();
 
-	// grouping -> "(" or ")"
-	private Grouping Grouping()
+	// range -> "range" "(" literal "," literal ")"
+	private Range Range()
 	{
-		Consume(TokenType.LEFT_PAREN, "Expect '(' before grouping");
-		var or = Or();
-		Consume(TokenType.RIGHT_PAREN, "Expect ')' after grouping");
-		return new(or);
+		var range = Consume(TokenType.RANGE, $"Expect '{nameof(TokenType.RANGE)}'");
+		Consume(TokenType.LEFT_PAREN, $"Expect '(' after {range.Lexeme}");
+
+		var from = Consume(TokenType.LITERAL, $"Expect literal as {range.Lexeme}'s first argument");
+		Consume(TokenType.COMMA, $"Expect ',' after {range.Lexeme}'s first argument");
+		var to = Consume(TokenType.LITERAL, $"Expect literal as {range.Lexeme}'s second argument");
+
+		Consume(TokenType.RIGHT_PAREN, $"Expect ')' after {range.Lexeme}'s second argument");
+		return new Range(Literal(from), Literal(to));
 	}
 
 	// term -> any | start | end | ws | digit | word | boundary | nl | cr | tab | null | quote | literal
@@ -198,7 +252,7 @@ internal class Parser(List<Token> tokens)
 			TokenType.NULL => Null.Instance,
 			TokenType.QUOTE => Quote.Instance,
 
-			TokenType.LITERAL => new Literal(token.Lexeme[1..^1]), // delete the quotes. "abc" becomes abc.
+			TokenType.LITERAL => Literal(token),
 			_ => throw Error(token, "Expect Term")
 		};
 		Advance();
@@ -223,6 +277,10 @@ internal class Parser(List<Token> tokens)
 		}
 	}
 
+	// delete the quotes. "abc" becomes abc.
+	private static Literal Literal(Token token) =>
+		new(token.Lexeme[1..^1]);
+
 	private bool Match(params TokenType[] types)
 	{
 		if (Array.Exists(types, Check))
@@ -236,11 +294,11 @@ internal class Parser(List<Token> tokens)
 		}
 	}
 
-	private void Consume(TokenType type, string message)
+	private Token Consume(TokenType type, string message)
 	{
 		if (Check(type))
 		{
-			Advance();
+			return Advance();
 		}
 		else
 		{

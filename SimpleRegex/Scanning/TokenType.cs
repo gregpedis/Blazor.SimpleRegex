@@ -11,54 +11,51 @@ public enum TokenType
 	// Keywords.
 	OR, ANY, EXACTLY, AT_LEAST, BETWEEN, START, END,
 	MAYBE, MAYBE_MANY, MANY, LAZY,
+	RANGE, ANY_OF, NOT_ANY_OF, CAPTURE, MATCH, NOT_MATCH,
 }
 
-// "abc"					-> abc
-// ()						-> precedence
-// +						-> "ab" + "c" -> "abc"
-// or						-> |
+// "abc"						-> abc
+// ()							-> precedence
+// +							-> "ab" + "c" -> "abc"
+// or							-> |
 
-// any						-> .
-// start					-> ^
-// end						-> $
+// any							-> .
+// start						-> ^
+// end							-> $
 
-// maybe("abc")				-> (abc)?
-// maybeMany("abc")			-> (abc)*
-// many("abc")				-> (abc)+
+// maybe("abc")					-> (abc)?
+// maybeMany("abc")				-> (abc)*
+// many("abc")					-> (abc)+
 
-// exactly("abc", 3)		-> (abc){3}
-// atLeast("abc", 3)		-> (abc){3,}
-// between("abc", 3, 6)		-> (abc){3,6}
+// exactly("abc", 3)			-> (abc){3}
+// atLeast("abc", 3)			-> (abc){3,}
+// between("abc", 3, 6)			-> (abc){3,6}
 
-// lazy(many("abc"))		-> (abc)+?
+// lazy(many("abc"))			-> (abc)+?
 
-// whitespace, ws			-> \s
-// digit					-> \d
-// word						-> \w
-// boundary					-> \b
-// newline,ln				-> \n
-// cr						-> \r
-// tab						-> \t
-// null						-> \0
-// quote					-> ""
+// whitespace, ws				-> \s
+// digit						-> \d
+// word							-> \w
+// boundary						-> \b
+// newline,ln					-> \n
+// cr							-> \r
+// tab							-> \t
+// null							-> \0
+// quote						-> ""
 
-// ---
+// range("a","z")				-> a-z
+// anyOf("abc")					-> [abc]
+// notAnyOf("abc")				-> [^abc]
+// anyof(range("a", "z"), "A")	-> [a-zA]
 
-// anyOf("abc")				-> [abc]
-// range("az")				-> [a-z]
-// ???						-> [a-zA]
-
-// ---
-
-// match("abc")				-> (?:abc)
-// capture("abc", "name")	-> (?'name'abc) or (?<name>abc)
-// capture("abc") 			-> (abc)
+// capture("abc", "name")		-> (?'name'abc) or (?<name>abc)
+// capture("abc") 				-> (abc)
+// match("abc")					-> (?:abc)
+// notMatch("abc")				-> (?!abc)
 
 // ---
 
-// notAnyOf("abc")			-> [^abc]
-// notMatch("abc")			-> (?!abc)
-// notdigit					-> \D
+// notdigit						-> \D
 
 // ---
 
