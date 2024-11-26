@@ -11,8 +11,9 @@ A simple language parser that compiles an expression to a regex.
 
 ## TODO
 
-- Support "not" cases
 - Fix TODOs
+- Add edgecase tests
+- Consider refactoring the grammar
 
 - Add description of grammar and operator/quantifiers on readme.
 - Add description of grammar and operator/quantifiers on blazor.

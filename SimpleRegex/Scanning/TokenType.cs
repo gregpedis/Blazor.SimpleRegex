@@ -5,7 +5,7 @@ public enum TokenType
 	// Single character tokens.
 	LEFT_PAREN, RIGHT_PAREN, COMMA, CONCAT, EOF,
 	// Escaped tokens.
-	WHITESPACE, DIGIT, WORD, BOUNDARY, NEWLINE, CR, TAB, NULL, QUOTE,
+	WHITESPACE, DIGIT, NOT_DIGIT, WORD, NOT_WORD, BOUNDARY, NEWLINE, CR, TAB, NULL, QUOTE,
 	// Literals.
 	LITERAL, NUMBER,
 	// Keywords.
@@ -23,6 +23,18 @@ public enum TokenType
 // start						-> ^
 // end							-> $
 
+// whitespace, ws				-> \s
+// digit						-> \d
+// notdigit						-> \D
+// word							-> \w
+// notword						-> \W
+// boundary						-> \b
+// newline,ln					-> \n
+// cr							-> \r
+// tab							-> \t
+// null							-> \0
+// quote						-> ""
+
 // maybe("abc")					-> (abc)?
 // maybeMany("abc")				-> (abc)*
 // many("abc")					-> (abc)+
@@ -33,16 +45,6 @@ public enum TokenType
 
 // lazy(many("abc"))			-> (abc)+?
 
-// whitespace, ws				-> \s
-// digit						-> \d
-// word							-> \w
-// boundary						-> \b
-// newline,ln					-> \n
-// cr							-> \r
-// tab							-> \t
-// null							-> \0
-// quote						-> ""
-
 // range("a","z")				-> a-z
 // anyOf("abc")					-> [abc]
 // notAnyOf("abc")				-> [^abc]
@@ -52,10 +54,6 @@ public enum TokenType
 // capture("abc") 				-> (abc)
 // match("abc")					-> (?:abc)
 // notMatch("abc")				-> (?!abc)
-
-// ---
-
-// notdigit						-> \D
 
 // ---
 

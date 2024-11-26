@@ -30,17 +30,61 @@ public class CompilerTests
 		AssertFailure<ParsingException>(output, $"Parsing Error: {error}");
 	}
 
-	[TestMethod]
-	public void Compile_SimpleExpression()
-	{
-		var input = """
-			"a" or "b"
-			""";
+	[DataTestMethod]
+	[DataRow("\"a\" or \"b\"", "a|b")]
+	[DataRow("\"a\" + \"b\"", "ab")]
 
-		var output = Compiler.Compile(input);
+	[DataRow("any", ".")]
+	[DataRow("start", "^")]
+	[DataRow("end", "$")]
+	[DataRow("ws", "\\s")]
+	[DataRow("whitespace", "\\s")]
+	[DataRow("digit", "\\d")]
+	[DataRow("notdigit", "\\D")]
+	[DataRow("word", "\\w")]
+	[DataRow("notword", "\\W")]
+	[DataRow("boundary", "\\b")]
+	[DataRow("newline", "\\n")]
+	[DataRow("nl", "\\n")]
+	[DataRow("cr", "\\r")]
+	[DataRow("tab", "\\t")]
+	[DataRow("null", "\\0")]
+	[DataRow("quote", "\"\"")]
 
-		AssertSuccess(output, "a|b");
-	}
+	[DataRow("maybe(\"a\")", "a?")]
+	[DataRow("maybeMany(\"ab\")", "(ab)*")]
+	[DataRow("many(\"a\")", "a+")]
+	[DataRow("lazy(maybe(\"ab\"))", "(ab)??")]
+	[DataRow("lazy(maybeMany(\"a\"))", "a*?")]
+	[DataRow("lazy(many(\"abc\"))", "(abc)+?")]
+
+	[DataRow("exactly(\"a\", 42)", "a{42}")]
+	[DataRow("atLeast(\"ab\", 42)", "(ab){42,}")]
+	[DataRow("between(\"abc\", 3, 42)", "(abc){3,42}")]
+
+	[DataRow("anyOf(\"a\")", "[a]")]
+	[DataRow("notAnyOf(\"-\")", "[^\\-]")]
+	[DataRow("anyOf(\"^\")", "[\\^]")]
+	[DataRow("notAnyOf(ws)", "[^\\s]")]
+	[DataRow("anyOf(digit)", "[\\d]")]
+	[DataRow("notAnyOf(notDigit)", "[^\\D]")]
+	[DataRow("anyOf(word)", "[\\w]")]
+	[DataRow("notAnyOf(notWord)", "[^\\W]")]
+	[DataRow("anyOf(nl)", "[\\n]")]
+	[DataRow("notAnyOf(newline)", "[^\\n]")]
+	[DataRow("anyOf(cr)", "[\\r]")]
+	[DataRow("notAnyOf(tab)", "[^\\t]")]
+	[DataRow("anyOf(quote)", "[\"\"]")]
+	[DataRow("notAnyOf(range(\"a\",\"z\"))", "[^a-z]")]
+	[DataRow("anyOf(range(\"a\",\"z\"), \"42\")", "[a-z42]")]
+	[DataRow("notAnyOf(\"hey_\", range(\"0\",\"5\"), \"_you_\", range(\"a\",\"z\"), \"_there\")", "[^hey_0-5_you_a-z_there]")]
+
+	[DataRow("capture(boundary)", "(\\b)")]
+	[DataRow("capture(\"abc\", \"Name_42\")", "(?<Name_42>abc)")]
+	[DataRow("match(any + newline)", "(?:.\\n)")]
+	[DataRow("notmatch(\"abc\" or digit)", "(?!abc|\\d)")]
+	public void Compile_SimpleExpression(string input, string output) =>
+		AssertSuccess(Compiler.Compile(input), output);
 
 	[TestMethod]
 	public void Compile_ComplexExpression()

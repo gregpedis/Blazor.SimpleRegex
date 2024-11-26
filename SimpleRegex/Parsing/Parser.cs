@@ -163,12 +163,12 @@ internal class Parser(List<Token> tokens)
 	private Expr Factor() =>
 		Peek().Type switch
 		{
-			TokenType.MATCH or TokenType.CAPTURE => Group(),
+			TokenType.CAPTURE or TokenType.MATCH or TokenType.NOT_MATCH => Group(),
 			TokenType.ANY_OF or TokenType.NOT_ANY_OF => CharacterClass(),
 			_ => Term()
 		};
 
-	// group -> "match" "(" or ")" | "capture" "(" or ("," literal)? ")" // TODO: Fix this
+	// group -> ("match" | "notmatch") "(" or ")" | "capture" "(" or ("," literal)? ")"
 	private Expr Group()
 	{
 		var group = Advance();
@@ -182,10 +182,15 @@ internal class Parser(List<Token> tokens)
 		Consume(TokenType.RIGHT_PAREN, $"Expect ')' after {group.Lexeme}'s arguments");
 		return group.Type switch
 		{
-			TokenType.MATCH when name is null => new Match(expression),
-			TokenType.MATCH when name is not null => throw Error(group, $"'match' cannot specify a 'name' argument because it is not a 'capture'"),
 			TokenType.CAPTURE when name is null => new Capture(expression),
 			TokenType.CAPTURE when name is not null => new NamedCapture(expression, name),
+
+			TokenType.MATCH when name is null => new Match(expression),
+			TokenType.MATCH when name is not null => throw Error(group, $"'match' cannot specify a 'name' argument because it is not a 'capture'"),
+
+			TokenType.NOT_MATCH when name is null => new NotMatch(expression),
+			TokenType.NOT_MATCH when name is not null => throw Error(group, $"'notMatch' cannot specify a 'name' argument because it is not a 'capture'"),
+
 			_ => throw Error(group, $"Expect '{TokenType.MATCH}' or '{TokenType.CAPTURE}'"),
 		};
 	}
@@ -211,11 +216,11 @@ internal class Parser(List<Token> tokens)
 		};
 	}
 
-	// anyof_argument -> range | term
+	// anyof_argument -> range | character_term
 	private Expr AnyOfArgument() =>
 		Check(TokenType.RANGE)
 			? Range()
-			: Term();
+			: CharacterTerm();
 
 	// range -> "range" "(" literal "," literal ")"
 	private Range Range()
@@ -231,28 +236,53 @@ internal class Parser(List<Token> tokens)
 		return new Range(Literal(from), Literal(to));
 	}
 
-	// term -> any | start | end | ws | digit | word | boundary | nl | cr | tab | null | quote | literal
+	// term -> character_term | non_character_term
 	private Expr Term()
+	{
+		try
+		{
+			return CharacterTerm();
+		}
+		catch (ParsingException)
+		{
+			return NonCharacterTerm();
+		}
+	}
+
+	// character_term -> ws | digit | notdigit | word | notWord | nl | cr | tab | quote | literal
+	private Expr CharacterTerm()
 	{
 		var token = Peek();
 		Expr term = token.Type switch
 		{
-			// anchors.
-			TokenType.START => Start.Instance,
-			TokenType.END => End.Instance,
-			TokenType.BOUNDARY => Boundary.Instance,
-			// non-anchors.
-			TokenType.ANY => Any.Instance,
 			TokenType.WHITESPACE => Whitespace.Instance,
 			TokenType.DIGIT => Digit.Instance,
+			TokenType.NOT_DIGIT => NotDigit.Instance,
 			TokenType.WORD => Word.Instance,
+			TokenType.NOT_WORD => NotWord.Instance,
 			TokenType.NEWLINE => NewLine.Instance,
 			TokenType.CR => Cr.Instance,
 			TokenType.TAB => Tab.Instance,
-			TokenType.NULL => Null.Instance,
 			TokenType.QUOTE => Quote.Instance,
 
 			TokenType.LITERAL => Literal(token),
+			_ => throw Error(token, "Expect Term")
+		};
+		Advance();
+		return term;
+	}
+
+	// non_character_term -> any | start | end | boundary | null
+	private Expr NonCharacterTerm()
+	{
+		var token = Peek();
+		Expr term = token.Type switch
+		{
+			TokenType.START => Start.Instance,
+			TokenType.END => End.Instance,
+			TokenType.BOUNDARY => Boundary.Instance,
+			TokenType.ANY => Any.Instance,
+			TokenType.NULL => Null.Instance,
 			_ => throw Error(token, "Expect Term")
 		};
 		Advance();

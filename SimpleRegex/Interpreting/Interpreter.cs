@@ -1,5 +1,4 @@
-﻿using System.Net.NetworkInformation;
-using System.Text;
+﻿using System.Text;
 using SimpleRegex.Parsing.Nodes;
 using Range = SimpleRegex.Parsing.Nodes.Range;
 
@@ -13,7 +12,7 @@ internal static class Interpreter
 		'[', ']',
 		'[', ']',
 		'.', '^', '$' ,
-		'\\',
+		'\\', '-',
 		'?', '*', '+',
 		'|',
 	];
@@ -34,6 +33,7 @@ internal static class Interpreter
 			Between between => Interpret(between),
 
 			Match match => Interpret(match),
+			NotMatch notMatch => Interpret(notMatch),
 			Capture capture => Interpret(capture),
 			NamedCapture namedCapture => Interpret(namedCapture),
 
@@ -48,7 +48,9 @@ internal static class Interpreter
 			End => "$",
 			Whitespace => @"\s",
 			Digit => @"\d",
+			NotDigit => @"\D",
 			Word => @"\w",
+			NotWord => @"\W",
 			Boundary => @"\b",
 			NewLine => @"\n",
 			Cr => @"\r",
@@ -89,14 +91,45 @@ internal static class Interpreter
 	private static string Interpret(Match match) =>
 		$"(?:{Interpret(match.Value)})";
 
+	private static string Interpret(NotMatch notMatch) =>
+		$"(?!{Interpret(notMatch.Value)})";
+
 	private static string Interpret(Capture capture) =>
 		$"({Interpret(capture.Value)})";
 
-	private static string Interpret(NamedCapture namedCapture) =>
-		$"(?<{Interpret(namedCapture.Right)}>{Interpret(namedCapture.Left)})";
+	private static string Interpret(NamedCapture namedCapture)
+	{
+		var name = Interpret(namedCapture.Right);
+		var value = Interpret(namedCapture.Left);
+		if (name.Length == 0)
+		{
+			throw Error($"Named capture group {namedCapture}'s name requires at least one character");
+		}
+		else if (name.All(x => x == '_' || char.IsDigit(x) || char.IsAsciiLetter(x)))
+		{
+		return $"(?<{name}>{value})";
+		}
+		else
+		{
+			throw Error($"Named capture group {namedCapture}'s name can only comprise of ASCII alphanumeric characters (A-Z, a-z, 0-9) or '_'");
+		}
+	}
 
-	private static string Interpret(AnyOf anyOf) =>
-		$"[{string.Join("", anyOf.Operands.Select(Interpret))}]";
+	private static string Interpret(AnyOf anyOf)
+	{
+		var value = string.Join("", anyOf.Operands.Select(Interpret));
+		// This is a hack. "start" needs to be escaped only at the first position, or the character class is reversed.
+		value = value.StartsWith('^') ? $"\\{value}" : value;
+
+		if (value.Length == 0)
+		{
+			throw Error($"Character class {anyOf} requires at least one character");
+		}
+		else
+		{
+			return $"[{value}]";
+		}
+	}
 
 	private static string Interpret(NotAnyOf notAnyOf) =>
 		$"[^{string.Join("", notAnyOf.Operands.Select(Interpret))}]";
@@ -132,7 +165,7 @@ internal static class Interpreter
 		{
 			return value[0] == '\\' ? value : $"({value})";
 		}
-		// Length>2 is ok if it is a group or a character class.
+		// Length>2 is ok if it is a single group or a character class.
 		else
 		{
 			if (value.StartsWith('(') && value.IndexOf(')') == value.Length - 1) // the expression is a single group.

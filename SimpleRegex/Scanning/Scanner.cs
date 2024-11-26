@@ -1,7 +1,4 @@
-﻿
-using System.ComponentModel.Design;
-
-namespace SimpleRegex.Scanning;
+﻿namespace SimpleRegex.Scanning;
 
 internal class Scanner(string source)
 {
@@ -20,7 +17,9 @@ internal class Scanner(string source)
 		{ "WS" , TokenType.WHITESPACE },				// \s
 		{ "WHITESPACE" , TokenType.WHITESPACE },		// \s
 		{ "DIGIT" , TokenType.DIGIT },					// \d
+		{ "NOTDIGIT" , TokenType.NOT_DIGIT},			// \D
 		{ "WORD" , TokenType.WORD },					// \w
+		{ "NOTWORD" , TokenType.NOT_WORD },				// \W
 		{ "BOUNDARY" , TokenType.BOUNDARY },			// \b
 		{ "NEWLINE" , TokenType.NEWLINE },				// \n
 		{ "NL" , TokenType.NEWLINE },					// \n
@@ -47,7 +46,7 @@ internal class Scanner(string source)
 
 		// group constructs.
 		{ "CAPTURE", TokenType.CAPTURE },				// (abc) or (?<name>abc)
-		{ "MATCH", TokenType.NOT_MATCH },				// (?:abc)
+		{ "MATCH", TokenType.MATCH},					// (?:abc)
 		{ "NOTMATCH", TokenType.NOT_MATCH },			// (?!abc)
 	};
 
