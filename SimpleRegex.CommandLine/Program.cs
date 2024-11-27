@@ -20,7 +20,7 @@ while (true)
 	}
 	else
 	{
-		Console.WriteLine(compilation.Exception.Message);
+		PrintError(compilation.Exception.Message);
 	}
 }
 
@@ -51,5 +51,13 @@ void PrintTitle(string message)
 	Console.ForegroundColor = ConsoleColor.Green;
 	Console.WriteLine(message);
 	Console.WriteLine(new string('=', message.Length));
+	Console.ForegroundColor = before;
+}
+
+void PrintError(string message)
+{
+	var before = Console.ForegroundColor;
+	Console.ForegroundColor = ConsoleColor.Red;
+	Console.WriteLine(message);
 	Console.ForegroundColor = before;
 }

@@ -1,21 +1,21 @@
 using FluentAssertions;
+using System.Runtime.Serialization;
 
 namespace SimpleRegex.Test;
 
 [TestClass]
 public class CompilerTests
 {
+
 	[DataTestMethod]
 	[DataRow("start $", "Unexpected character '$' at line 1.")]
 	[DataRow("start or \"hey", "Unterminated string at line 1.")]
 	[DataRow("start\nor \n INVALID", "Unexpected identifier 'INVALID' at line 3.")]
 	[DataRow("start /or end", "Expected second '/' at line 1.")]
-	public void Compile_ScanningError(string input, string error)
-	{
-		var output = Compiler.Compile(input);
-		AssertFailure<ScanningException>(output, $"Scanning Error: {error}");
-	}
+	public void Compile_ScanningError(string input, string error) =>
+		AssertFailure<ScanningException>(Compiler.Compile(input), $"Scanning Error: {error}");
 
+	// TODO: Handle most or all the "Consume" invocations.
 	[DataTestMethod]
 	[DataRow("lazy(any)", "Expect quantifier after '(' at token [LEFT_PAREN] '(' at line 1.")]
 	[DataRow("exactly(start, 42)", "Expect quantifiable token but got START at token [EXACTLY] 'exactly' at line 1.")]
@@ -24,16 +24,21 @@ public class CompilerTests
 	[DataRow("maybe(start)", "Expect quantifiable token but got START at token [MAYBE] 'maybe' at line 1.")]
 	[DataRow("maybemany(end)", "Expect quantifiable token but got END at token [MAYBE_MANY] 'maybemany' at line 1.")]
 	[DataRow("many(boundary)", "Expect quantifiable token but got BOUNDARY at token [MANY] 'many' at line 1.")]
-	public void Compile_ParsingError(string input, string error)
-	{
-		var output = Compiler.Compile(input);
-		AssertFailure<ParsingException>(output, $"Parsing Error: {error}");
-	}
+	[DataRow("anyof(start)", "Expect Term at token [START] 'start' at line 1.")]
+	[DataRow("match(whitespace, \"name\")", "'match' cannot specify a 'name' argument because it is not a 'capture' at token [MATCH] 'match' at line 1.")]
+	[DataRow("notmatch(whitespace, \"name\")", "'notMatch' cannot specify a 'name' argument because it is not a 'capture' at token [NOT_MATCH] 'notmatch' at line 1.")]
+	public void Compile_ParsingError(string input, string error) =>
+		AssertFailure<ParsingException>(Compiler.Compile(input), $"Parsing Error: {error}");
+
+	// TODO: Cover all the cases.
+	[DataTestMethod]
+	[DataRow("", "")]
+	public void Compile_InterpreterError(string input, string error) =>
+	AssertFailure<InterpreterException>(Compiler.Compile(input), $"Intepretation Error: {error}");
 
 	[DataTestMethod]
 	[DataRow("\"a\" or \"b\"", "a|b")]
 	[DataRow("\"a\" + \"b\"", "ab")]
-
 	[DataRow("any", ".")]
 	[DataRow("start", "^")]
 	[DataRow("end", "$")]
@@ -50,18 +55,34 @@ public class CompilerTests
 	[DataRow("tab", "\\t")]
 	[DataRow("null", "\\0")]
 	[DataRow("quote", "\"\"")]
+	public void Compile_SimpleExpression(string input, string output) =>
+		AssertSuccess(Compiler.Compile(input), output);
 
+	[DataTestMethod]
 	[DataRow("maybe(\"a\")", "a?")]
 	[DataRow("maybeMany(\"ab\")", "(ab)*")]
 	[DataRow("many(\"a\")", "a+")]
-	[DataRow("lazy(maybe(\"ab\"))", "(ab)??")]
-	[DataRow("lazy(maybeMany(\"a\"))", "a*?")]
-	[DataRow("lazy(many(\"abc\"))", "(abc)+?")]
+	public void Compile_SimpleQuantifier(string input, string output) =>
+		AssertSuccess(Compiler.Compile(input), output);
 
+	[DataTestMethod]
 	[DataRow("exactly(\"a\", 42)", "a{42}")]
 	[DataRow("atLeast(\"ab\", 42)", "(ab){42,}")]
 	[DataRow("between(\"abc\", 3, 42)", "(abc){3,42}")]
+	public void Compile_PreciseQuantifier(string input, string output) =>
+		AssertSuccess(Compiler.Compile(input), output);
 
+	[DataTestMethod]
+	[DataRow("lazy(maybe(\"ab\"))", "(ab)??")]
+	[DataRow("lazy(maybeMany(\"a\"))", "a*?")]
+	[DataRow("lazy(many(\"abc\"))", "(abc)+?")]
+	[DataRow("lazy(exactly(\"a\", 42))", "a{42}?")]
+	[DataRow("lazy(atLeast(\"ab\", 42))", "(ab){42,}?")]
+	[DataRow("lazy(between(\"abc\", 3, 42))", "(abc){3,42}?")]
+	public void Compile_LazyQuantifier(string input, string output) =>
+		AssertSuccess(Compiler.Compile(input), output);
+
+	[DataTestMethod]
 	[DataRow("anyOf(\"a\")", "[a]")]
 	[DataRow("notAnyOf(\"-\")", "[^\\-]")]
 	[DataRow("anyOf(\"^\")", "[\\^]")]
@@ -78,14 +99,18 @@ public class CompilerTests
 	[DataRow("notAnyOf(range(\"a\",\"z\"))", "[^a-z]")]
 	[DataRow("anyOf(range(\"a\",\"z\"), \"42\")", "[a-z42]")]
 	[DataRow("notAnyOf(\"hey_\", range(\"0\",\"5\"), \"_you_\", range(\"a\",\"z\"), \"_there\")", "[^hey_0-5_you_a-z_there]")]
+	public void Compile_CharacterClass(string input, string output) =>
+		AssertSuccess(Compiler.Compile(input), output);
 
+	[DataTestMethod]
 	[DataRow("capture(boundary)", "(\\b)")]
 	[DataRow("capture(\"abc\", \"Name_42\")", "(?<Name_42>abc)")]
 	[DataRow("match(any + newline)", "(?:.\\n)")]
 	[DataRow("notmatch(\"abc\" or digit)", "(?!abc|\\d)")]
-	public void Compile_SimpleExpression(string input, string output) =>
+	public void Compile_GroupConstruct(string input, string output) =>
 		AssertSuccess(Compiler.Compile(input), output);
 
+	// TODO: Think of more complex scenarios, e.g. the start of groups or character classes not being escaped, etc.
 	[TestMethod]
 	public void Compile_ComplexExpression()
 	{
@@ -97,7 +122,7 @@ public class CompilerTests
 
 		var output = Compiler.Compile(input);
 
-		AssertSuccess(output,@"^(hello there){42,69}|(12){3}?|(.""""|\b)+");
+		AssertSuccess(output, @"^(hello there){42,69}|(12){3}?|(.""""|\b)+");
 	}
 
 	[TestMethod]
