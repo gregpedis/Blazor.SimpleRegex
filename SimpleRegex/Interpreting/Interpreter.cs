@@ -101,33 +101,38 @@ internal static class Interpreter
 	{
 		var name = Interpret(namedCapture.Right);
 		var value = Interpret(namedCapture.Left);
+
+		var result = $"(?<{name}>{value})";
+
 		if (name.Length == 0)
 		{
-			throw Error($"Named capture group (?<{name}>{value})'s name requires at least one character");
+			throw Error($"""Named capture group "{result}"'s name requires at least one character""");
 		}
 		else if (name.All(x => x == '_' || char.IsDigit(x) || char.IsAsciiLetter(x)))
 		{
-			return $"(?<{name}>{value})";
+			return result;
 		}
 		else
 		{
-			throw Error($"Named capture group (?<{name}>{value})'s name can only comprise of ASCII alphanumeric characters (A-Z, a-z, 0-9) and '_'");
+			throw Error($"""Named capture group "{result}"'s name can only comprise of ASCII alphanumeric characters (A-Z, a-z, 0-9) and '_'""");
 		}
 	}
 
 	private static string Interpret(AnyOf anyOf)
 	{
 		var value = string.Join("", anyOf.Operands.Select(Interpret));
-		// This is a hack. "start" needs to be escaped only at the first position, or the character class is reversed.
+		// This is a hack.
+		// "start" needs to be escaped only at the first position, or the character class is reversed.
 		value = value.StartsWith('^') ? $"\\{value}" : value;
 
+		var result = $"[{value}]";
 		if (value.Length == 0)
 		{
-			throw Error($"Character class {anyOf} requires at least one character");
+			throw Error($"""Character class "{result}" requires at least one character""");
 		}
 		else
 		{
-			return $"[{value}]";
+			return result;
 		}
 	}
 
@@ -154,20 +159,20 @@ internal static class Interpreter
 	#region HELPERS
 	private static string Parenthesize(string value)
 	{
-		// Length<=1 is ALWAYS ok as anchors are NOT quantifiable.
+		// Length <= 1 is ALWAYS ok as anchors are NOT quantifiable.
 		if (value.Length <= 1)
 		{
 			return value;
 		}
-		// Length==2 is ok if it starts with the escape character "\", as as anchors are NOT quantifiable.
+		// Length == 2 is ok if it starts with the escape character "\", as as anchors are NOT quantifiable.
 		else if (value.Length == 2)
 		{
 			return value[0] == '\\' ? value : $"({value})";
 		}
-		// Length>2 is ok if it is a single group or a character class.
+		// Length > 2 is ok if it is a single group construct or a character class.
 		else
 		{
-			if (value.StartsWith('(') && value.IndexOf(')') == value.Length - 1) // the expression is a single group.
+			if (value.StartsWith('(') && value.IndexOf(')') == value.Length - 1) // the expression is a single group construct.
 			{
 				return value;
 			}
