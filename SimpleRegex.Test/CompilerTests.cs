@@ -13,7 +13,6 @@ public class CompilerTests
 	public void Compile_ScanningError(string input, string error) =>
 		AssertFailure<ScanningException>(Compiler.Compile(input), $"Scanning Error: {error}");
 
-	// TODO: Handle most or all the "Consume" invocations.
 	[DataTestMethod]
 	[DataRow("digit digit", "Expect EOF at token [DIGIT] 'digit' at line 1.")]
 	[DataRow("lazy(any)", "Expect quantifier after '(' at token [LEFT_PAREN] '(' at line 1.")]
