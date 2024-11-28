@@ -7,19 +7,7 @@
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=gregpedis_simpleregex&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=gregpedis_simpleregex)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=gregpedis_simpleregex&metric=bugs)](https://sonarcloud.io/summary/new_code?id=gregpedis_simpleregex)
 
-A simple language parser that compiles an expression to a [regex](https://en.wikipedia.org/wiki/Regular_expression).
-
-## TODO
-
-- Add examples on readme.
-- Link github readme to blazor web app.
-- Change favicon to something with an "R" or an "SR".
-
-- Fix TODOs
-- Add edgecase tests.
-
--  Add tokens and syntax tree visualization on the blazor web app.
-- Support assignments.
+A simple [recursive descent parser](https://en.wikipedia.org/wiki/Recursive_descent_parser) that compiles an expression to a [regex](https://en.wikipedia.org/wiki/Regular_expression).
 
 ## Syntax
 
@@ -140,3 +128,14 @@ non_character_term	= any | start | end | boundary | null
 ## Examples
 
 ???
+
+## TODO
+
+- Add examples on readme.
+- Link github readme to blazor web app.
+
+- Fix TODOs
+- Add edgecase tests.
+
+-  Add tokens and syntax tree visualization on the blazor web app.
+- Support assignments.
