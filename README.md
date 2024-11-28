@@ -11,12 +11,132 @@ A simple language parser that compiles an expression to a regex.
 
 ## TODO
 
-- Fix TODOs
-- Add edgecase tests
-- Consider refactoring the grammar
-
-- Add description of grammar and operator/quantifiers on readme.
-- Add description of grammar and operator/quantifiers on blazor.
+- Add examples on readme.
+- Link github readme to blazor web app.
 - Change favicon to something with an "R" or an "SR".
 
-- Support assignments
+- Fix TODOs
+- Add edgecase tests.
+
+-  Add tokens and syntax tree visualization on the blazor web app.
+- Support assignments.
+
+## Syntax
+
+The language is multi-line, case-insensitive, whitespace-insignificant and supports the following syntax.
+
+#### Literals
+
+```csharp
+"abc"                               => abc
+```
+
+Literals are automatically escaped. This means that characters like `\` and `^` that have special meaning in regex are transformed to `\\` and `\^` respectively.
+
+#### Concatenation
+
+```csharp
+"abc" + "def"                       => abcdef
+```
+
+Concatenation is done using the `+` operator, and is used to "squash" together expressions.
+
+#### Alternation
+
+```csharp
+"abc" or "def"                      => abc|def
+```
+
+Alternation has the lowest priority in the entire grammar, just like in regular expressions.
+
+#### Simple Quantifier
+
+```csharp
+ maybe("abc")				        => (abc)?
+ maybeMany("abc")			        => (abc)*
+ many("abc")				        => (abc)+
+ ```
+
+#### Precise Quantifier
+
+```csharp
+ exactly("abc", 3)			        => (abc){42}
+ atLeast("abc", 3)			        => (abc){42,}
+ between("abc", 3, 6)		        => (abc){42,100}
+ ```
+
+ #### Lazy Quantifier
+
+```csharp
+lazy(many("abc"))			        => (abc)+?
+```
+
+`lazy` can accept as its argument all the simple and precise quantifiers.
+
+#### Character Class
+
+```csharp
+range("a","z")				        => a-z
+anyof(range("a", "z"), "A")	        => [a-zA]
+notAnyOf("abc_", range("A","Z"))	=> [^abc_A-Z]
+```
+
+#### Group Construct
+
+```csharp
+capture("abc") 				        => (abc)
+capture("abc", "name")		        => (?<name>abc)
+match("abc")				        => (?:abc)
+notMatch("abc")				        => (?!abc)
+```
+
+### Special character
+
+```
+any						            => .
+start						        => ^
+end                                 => $
+whitespace  				        => \s
+ws				                    => \s
+digit						        => \d
+notdigit					        => \D
+word						        => \w
+notword					            => \W
+boundary					        => \b
+newline					            => \n
+nl					                => \n
+cr							        => \r
+tab						            => \t
+null						        => \0
+quote						        => ""
+```
+
+## Grammar
+
+The language accepts expressions that match the following grammar in EBNF notation:
+
+```ebnf
+expression          = or
+or					= concat ("|" concat)*;
+concat				= lazy ("+" lazy)*;
+lazy				= "lazy" "(" quantifier ")" | quantifier | factor;
+quantifier			= simple_quantifier | precise_quantifier;
+simple_quantifier	= ("maybe" | "maybemany" | "many") "(" or ")";
+precise_quantifier	= exactly_or_atleast | between;
+exactly_or_atleast	= ("exactly" | "atleast") "(" or "," number ")";
+between				= "between" "(" or "," number "," number ")";
+factor				= group_construct | character_class | term;
+group_construct		= match | capture;
+match				= ("match" | "notmatch") "(" or ")";
+capture				= "capture" "(" or ("," literal)? ")";
+character_class		= ("anyof" | "notanyof") "(" anyof_arg ("," anyof_arg)* ")";
+anyof_arg			= range | character_term;
+range				= "range" "(" literal "," literal ")";
+term				= character_term | non_character_term;
+character_term		= ws | digit | notdigit | word | notWord | nl | cr | tab | quote | literal;
+non_character_term	= any | start | end | boundary | null; (?aaa?)
+```
+
+## Examples
+
+???

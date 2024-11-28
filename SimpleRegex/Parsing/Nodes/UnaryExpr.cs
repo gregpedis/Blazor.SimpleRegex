@@ -5,7 +5,7 @@ public class UnaryExpr<T>(T value) : Expr
 	public T Value { get; } = value;
 
 	public override string ToString() =>
-		$"{GetType().SimpleName()} {Value}";
+		$"{GetType().SimpleName()} ({Value})";
 }
 
 public class UnaryExpr(Expr value) : UnaryExpr<Expr>(value);
@@ -23,5 +23,5 @@ public class Many(Expr value) : UnaryExpr(value);
 public class Literal(string value) : UnaryExpr<string>(value)
 {
 	public override string ToString() =>
-		$"{GetType().SimpleName()} '{Value}'";
+		$"{GetType().SimpleName()} ({Value})";
 }

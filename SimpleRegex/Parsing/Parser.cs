@@ -26,11 +26,20 @@ internal class Parser(List<Token> tokens)
 		..PRECISE_QUANTIFIER_TOKENS,
 	];
 
-	private readonly List<Token> tokens = tokens;
 	private int current = 0;
 
-	public Expr ParseExpression() =>
-		Or();
+	public Expr ParseExpression()
+	{
+		var expression = Or();
+		if (IsAtEnd())
+		{
+			return expression;
+		}
+		else
+		{
+			throw Error(Peek(), $"Expect {nameof(TokenType.EOF)}");
+		}
+	}
 
 	#region EXPRESSIONS
 
@@ -56,7 +65,7 @@ internal class Parser(List<Token> tokens)
 		return concat;
 	}
 
-	// lazy -> "lazy(" quantifier ")" | quantifier | factor
+	// lazy -> "lazy" "(" quantifier ")" | quantifier | factor
 	private Expr Lazy()
 	{
 		if (Match(TokenType.LAZY))
@@ -84,10 +93,21 @@ internal class Parser(List<Token> tokens)
 	}
 
 	// quantifier -> simple_quantifier | precise_quantifier
-	private Expr Quantifier() =>
-		SIMPLE_QUANTIFIER_TOKENS.Contains(Peek().Type)
-			? SimpleQuantifier()
-			: PreciseQuantifier();
+	private Expr Quantifier()
+	{
+		if (CheckAny(SIMPLE_QUANTIFIER_TOKENS))
+		{
+			return SimpleQuantifier();
+		}
+		else if (CheckAny(PRECISE_QUANTIFIER_TOKENS))
+		{
+			return PreciseQuantifier();
+		}
+		else
+		{
+			throw Error(Peek(), "Expect quantifier");
+		}
+	}
 
 	// simple_quantifier -> ("maybe" | "maybemany" | "many") "(" or ")"
 	private Expr SimpleQuantifier()
@@ -102,7 +122,7 @@ internal class Parser(List<Token> tokens)
 			TokenType.MAYBE => new Maybe(argument),
 			TokenType.MAYBE_MANY => new MaybeMany(argument),
 			TokenType.MANY => new Many(argument),
-			_ => throw Error(quantifier, "Expect simple quantifier"),
+			_ => throw Error(quantifier, "Expect simple quantifier")
 		};
 	}
 
@@ -123,7 +143,7 @@ internal class Parser(List<Token> tokens)
 		}
 	}
 
-	// exactly_or_atleast -> ("exactly" | atleast) "(" or "," number ")"
+	// exactly_or_atleast -> ("exactly" | "atleast") "(" or "," number ")"
 	private Expr ExactlyOrAtLeast()
 	{
 		var quantifier = Advance();
@@ -137,7 +157,7 @@ internal class Parser(List<Token> tokens)
 		{
 			TokenType.EXACTLY => new Exactly(argument, number.Number.Value),
 			TokenType.AT_LEAST => new AtLeast(argument, number.Number.Value),
-			_ => throw Error(quantifier, "Expect 'exactly' or 'atleast'"),
+			_ => throw Error(quantifier, "Expect 'exactly' or 'atleast'")
 		};
 	}
 
@@ -159,43 +179,62 @@ internal class Parser(List<Token> tokens)
 		return new Between(argument, min.Number.Value, max.Number.Value);
 	}
 
-	// factor -> group | character_class | term
+	// factor -> group_construct | character_class | term
 	private Expr Factor() =>
 		Peek().Type switch
 		{
-			TokenType.CAPTURE or TokenType.MATCH or TokenType.NOT_MATCH => Group(),
+			TokenType.CAPTURE or TokenType.MATCH or TokenType.NOT_MATCH => GroupConstruct(),
 			TokenType.ANY_OF or TokenType.NOT_ANY_OF => CharacterClass(),
 			_ => Term()
 		};
 
-	// group -> ("match" | "notmatch") "(" or ")" | "capture" "(" or ("," literal)? ")"
-	private Expr Group()
+	// group_construct -> match | capture
+	private Expr GroupConstruct()
 	{
-		var group = Advance();
-		Consume(TokenType.LEFT_PAREN, $"Expect '(' after {group.Lexeme}");
-
-		var expression = Or();
-		Literal name = Match(TokenType.COMMA)
-			? Literal(Consume(TokenType.LITERAL, $"Expect literal as {group.Lexeme}'s second argument"))
-			: null;
-
-		Consume(TokenType.RIGHT_PAREN, $"Expect ')' after {group.Lexeme}'s arguments");
+		var group = Peek();
 		return group.Type switch
 		{
-			TokenType.CAPTURE when name is null => new Capture(expression),
-			TokenType.CAPTURE when name is not null => new NamedCapture(expression, name),
-
-			TokenType.MATCH when name is null => new Match(expression),
-			TokenType.MATCH when name is not null => throw Error(group, $"'match' cannot specify a 'name' argument because it is not a 'capture'"),
-
-			TokenType.NOT_MATCH when name is null => new NotMatch(expression),
-			TokenType.NOT_MATCH when name is not null => throw Error(group, $"'notMatch' cannot specify a 'name' argument because it is not a 'capture'"),
-
-			_ => throw Error(group, $"Expect '{TokenType.MATCH}' or '{TokenType.CAPTURE}'"),
+			TokenType.MATCH or TokenType.NOT_MATCH => Match(),
+			TokenType.CAPTURE => Capture(),
+			_ => throw Error(group, $"Expect '{TokenType.MATCH}' or '{TokenType.NOT_MATCH}' or '{TokenType.CAPTURE}'")
 		};
 	}
 
-	// character_class -> ("anyof" | "notanyof") "(" anyof_argument ("," anyof_argument)* ")"
+	// match -> ("match" | "notmatch") "(" or ")"
+	private Expr Match()
+	{
+		var match = Advance();
+		Consume(TokenType.LEFT_PAREN, $"Expect '(' after {match.Lexeme}");
+		var expression = Or();
+		Consume(TokenType.RIGHT_PAREN, $"Expect ')' after {match.Lexeme}'s argument");
+		return match.Type switch
+		{
+			TokenType.MATCH => new Match(expression),
+			TokenType.NOT_MATCH => new NotMatch(expression),
+			_ => throw Error(match, $"Expect '{TokenType.MATCH}' or '{TokenType.NOT_MATCH}'")
+		};
+	}
+
+	// capture -> "capture" "(" or ("," literal)? ")"
+	private Expr Capture()
+	{
+		var capture = Consume(TokenType.CAPTURE, $"Expect '{nameof(TokenType.CAPTURE)}'");
+		Consume(TokenType.LEFT_PAREN, $"Expect '(' after {capture.Lexeme}");
+
+		var expression = Or();
+		var name = Match(TokenType.COMMA)
+			? Literal(Consume(TokenType.LITERAL, $"Expect literal as {capture.Lexeme}'s second argument"))
+			: null;
+
+		Consume(TokenType.RIGHT_PAREN, $"Expect ')' after {capture.Lexeme}'s arguments");
+		return name switch
+		{
+			null => new Capture(expression),
+			_ => new NamedCapture(expression, name)
+		};
+	}
+
+	// character_class -> ("anyof" | "notanyof") "(" anyof_arg ("," anyof_arg)* ")"
 	private VariadicExpr CharacterClass()
 	{
 		var characterClass = Advance();
@@ -212,7 +251,7 @@ internal class Parser(List<Token> tokens)
 		{
 			TokenType.ANY_OF => new AnyOf(arguments),
 			TokenType.NOT_ANY_OF => new NotAnyOf(arguments),
-			_ => throw Error(characterClass, $"Expect '{TokenType.ANY_OF}' or '{TokenType.NOT_ANY_OF}'"),
+			_ => throw Error(characterClass, $"Expect '{TokenType.ANY_OF}' or '{TokenType.NOT_ANY_OF}'")
 		};
 	}
 

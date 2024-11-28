@@ -6,12 +6,7 @@ public class BinaryExpr<TLeft, TRight>(TLeft left, TRight right) : Expr
 	public TRight Right { get; } = right;
 
 	public override string ToString() =>
-		$"""
-		{GetType().SimpleName()} (
-			LEFT  => {left}
-			RIGHT => {left}
-		)
-		""";
+		$"{GetType().SimpleName()} ({Left}, {Right})";
 }
 
 public class BinaryExpr(Expr left, Expr right) : BinaryExpr<Expr, Expr>(left, right);
@@ -29,10 +24,5 @@ public class Between(Expr value, int min, int max) : Expr
 	public int Max { get; } = max;
 
 	public override string ToString() =>
-		$"""
-		{GetType().SimpleName()} (
-			VALUE => {Value}
-			FROM '{Min}' TO '{Max}' TIMES
-		)
-		""";
+		$"{GetType().SimpleName()} ({Value} ['{Min} -'{Max}'])";
 }

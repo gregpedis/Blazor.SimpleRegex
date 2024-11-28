@@ -1,12 +1,10 @@
 using FluentAssertions;
-using System.Runtime.Serialization;
 
 namespace SimpleRegex.Test;
 
 [TestClass]
 public class CompilerTests
 {
-
 	[DataTestMethod]
 	[DataRow("start $", "Unexpected character '$' at line 1.")]
 	[DataRow("start or \"hey", "Unterminated string at line 1.")]
@@ -25,14 +23,14 @@ public class CompilerTests
 	[DataRow("maybemany(end)", "Expect quantifiable token but got END at token [MAYBE_MANY] 'maybemany' at line 1.")]
 	[DataRow("many(boundary)", "Expect quantifiable token but got BOUNDARY at token [MANY] 'many' at line 1.")]
 	[DataRow("anyof(start)", "Expect Term at token [START] 'start' at line 1.")]
-	[DataRow("match(whitespace, \"name\")", "'match' cannot specify a 'name' argument because it is not a 'capture' at token [MATCH] 'match' at line 1.")]
-	[DataRow("notmatch(whitespace, \"name\")", "'notMatch' cannot specify a 'name' argument because it is not a 'capture' at token [NOT_MATCH] 'notmatch' at line 1.")]
+	[DataRow("match(whitespace, \"name\")", "Expect ')' after match's argument at token [COMMA] ',' at line 1.")]
+	[DataRow("notMatch(whitespace, \"name\")", "Expect ')' after notMatch's argument at token [COMMA] ',' at line 1.")]
 	public void Compile_ParsingError(string input, string error) =>
 		AssertFailure<ParsingException>(Compiler.Compile(input), $"Parsing Error: {error}");
 
 	// TODO: Cover all the cases.
 	[DataTestMethod]
-	[DataRow("", "")]
+	[DataRow("capture(\"abc\", \"\")", "Named capture group (?<>abc)'s name requires at least one character.")]
 	public void Compile_InterpreterError(string input, string error) =>
 	AssertFailure<InterpreterException>(Compiler.Compile(input), $"Intepretation Error: {error}");
 

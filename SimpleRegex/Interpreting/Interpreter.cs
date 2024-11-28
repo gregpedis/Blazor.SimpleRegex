@@ -103,15 +103,15 @@ internal static class Interpreter
 		var value = Interpret(namedCapture.Left);
 		if (name.Length == 0)
 		{
-			throw Error($"Named capture group {namedCapture}'s name requires at least one character");
+			throw Error($"Named capture group (?<{name}>{value})'s name requires at least one character");
 		}
 		else if (name.All(x => x == '_' || char.IsDigit(x) || char.IsAsciiLetter(x)))
 		{
-		return $"(?<{name}>{value})";
+			return $"(?<{name}>{value})";
 		}
 		else
 		{
-			throw Error($"Named capture group {namedCapture}'s name can only comprise of ASCII alphanumeric characters (A-Z, a-z, 0-9) or '_'");
+			throw Error($"Named capture group (?<{name}>{value})'s name can only comprise of ASCII alphanumeric characters (A-Z, a-z, 0-9) and '_'");
 		}
 	}
 
@@ -152,7 +152,6 @@ internal static class Interpreter
 		Escape(literal.Value);
 
 	#region HELPERS
-
 	private static string Parenthesize(string value)
 	{
 		// Length<=1 is ALWAYS ok as anchors are NOT quantifiable.
