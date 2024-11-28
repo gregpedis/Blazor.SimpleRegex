@@ -5,7 +5,7 @@ public class VariadicExpr(List<Expr> operands) : Expr
 	public List<Expr> Operands { get; } = operands;
 
 	public override string ToString() =>
-		$"{GetType().SimpleName()} ({string.Join(Environment.NewLine, Operands)})";
+		$"{GetType().SimpleName()} ({string.Join(", ", Operands)})";
 }
 
 public class Concat(List<Expr> operands) : VariadicExpr(operands);
