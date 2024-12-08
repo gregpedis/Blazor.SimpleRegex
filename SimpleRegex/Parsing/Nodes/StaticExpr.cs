@@ -8,8 +8,6 @@ public class StaticExpr<T> : Expr where T : StaticExpr<T>, new()
 		GetType().SimpleName();
 }
 
-public class Anchor<T> : StaticExpr<T> where T : StaticExpr<T>, new();
-
 public class Any : StaticExpr<Any>;
 public class Whitespace : StaticExpr<Whitespace>;
 public class Digit : StaticExpr<Digit>;
@@ -22,8 +20,9 @@ public class Tab : StaticExpr<Tab>;
 public class Null : StaticExpr<Null>;
 public class Quote : StaticExpr<Quote>;
 
-public class Start : Anchor<Start>;
-public class End : Anchor<End>;
-public class Boundary : Anchor<Boundary>;
-public class NotBoundary : Anchor<Boundary>;
+public interface IAnchor { }
 
+public class Start : StaticExpr<Start>, IAnchor;
+public class End : StaticExpr<End>, IAnchor;
+public class Boundary : StaticExpr<Boundary>, IAnchor;
+public class NotBoundary : StaticExpr<NotBoundary>, IAnchor;

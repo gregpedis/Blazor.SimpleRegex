@@ -22,6 +22,7 @@ public class CompilerTests
 	[DataRow("maybe(start)", "Expect quantifiable token but got START at token [MAYBE] 'maybe' at line 1.")]
 	[DataRow("maybemany(end)", "Expect quantifiable token but got END at token [MAYBE_MANY] 'maybemany' at line 1.")]
 	[DataRow("many(boundary)", "Expect quantifiable token but got BOUNDARY at token [MANY] 'many' at line 1.")]
+	[DataRow("many(notBoundary)", "Expect quantifiable token but got NOTBOUNDARY at token [MANY] 'many' at line 1.")]
 	[DataRow("anyof(start)", "Expect Term at token [START] 'start' at line 1.")]
 	[DataRow("""match(whitespace, "name")""", "Expect ')' after match's argument at token [COMMA] ',' at line 1.")]
 	[DataRow("""notMatch(whitespace, "name")""", "Expect ')' after notMatch's argument at token [COMMA] ',' at line 1.")]

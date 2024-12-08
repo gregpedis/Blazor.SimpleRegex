@@ -337,7 +337,7 @@ internal class Parser(List<Token> tokens)
 	{
 		if (argument.Operands[0] is Concat concat
 			&& concat.Operands[0] is { } anchor
-			&& anchor is Start or End or Boundary)
+			&& anchor is IAnchor)
 		{
 			throw Error(quantifier, $"Expect quantifiable token but got {anchor}");
 		}
@@ -347,7 +347,7 @@ internal class Parser(List<Token> tokens)
 		}
 	}
 
-	// delete the quotes. "abc" becomes abc.
+	// Delete the quotes. "abc" becomes abc.
 	private static Literal Literal(Token token) =>
 		new(token.Lexeme[1..^1]);
 

@@ -139,9 +139,9 @@ non_character_term	= any | start | end | boundary | null
 // (apple|orange)\sjuice
 capture("apple" or "orange") + whitespace + "juice"
 
-// \s|\d|\D|\w|\W|\n|\r|\t|""|.|^|$|\b|\0
+// \s|\d|\D|\w|\W|\n|\r|\t|""|.|^|$|\b|\B|\0
 ws or digit or notdigit or word or notWord or nl or cr or tab or quote or
-any or start or end or boundary or null
+any or start or end or boundary or notBoundary or null
 ```
 
 #### Quantifiers
@@ -220,4 +220,3 @@ end
 
 -  Add tokens and syntax tree visualization on the blazor web app. Maybe using [treeview](https://www.w3schools.com/howto/howto_js_treeview.asp) and some JS.
 - Support assignments.
-
