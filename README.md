@@ -127,11 +127,96 @@ non_character_term	= any | start | end | boundary | null
 
 ## Examples
 
-???
+#### Simple Examples
+
+```csharp
+// this is a dot\.
+"this is a dot."
+
+// cat|dog
+"cat" or "dog"
+
+// (apple|orange)\sjuice
+capture("apple" or "orange") + whitespace + "juice"
+
+// \s|\d|\D|\w|\W|\n|\r|\t|""|.|^|$|\b|\0
+ws or digit or notdigit or word or notWord or nl or cr or tab or quote or
+any or start or end or boundary or null
+```
+
+#### Quantifiers
+
+```csharp
+// (pizza)?(pasta)+(sushi)*(escalope){2}(souvlaki){2,}(chips){2,4}(burger)+?
+maybe("pizza") +
+many("pasta") +
+maybeMany("sushi") +
+exactly("escalope", 2) +
+atleast("souvlaki", 2) +
+between("chips", 2, 4) +
+lazy(many("burger"))
+```
+
+#### Group Constructs
+
+```csharp
+// (?:pizza)|(?!pasta)|(burger)
+match("pizza") or
+notmatch("pasta") or
+capture("burger")
+```
+
+#### Character Classes
+
+```csharp
+// one of these: [a-za-Z\d] not one of these: [^\w\t]
+"one of these: " +
+anyOf(
+    range("a","z"),
+    range("a","Z"),
+    digit) +
+" not one of these: " +
+notAnyOf(
+    word,
+    tab
+)
+```
+
+#### Email Validation
+
+```csharp
+// ^[a-zA-Z0-9_\-\.]+@[a-zA-Z0-9_\-\.]+\.[a-zA-Z]{2,5}$
+start +
+many(
+    anyOf(
+        range("a","z"),
+        range("A", "Z"),
+        range("0", "9"),
+        "_",
+        "-",
+        "."
+        )) +
+"@" +
+many(
+    anyOf(
+        range("a","z"),
+        range("A", "Z"),
+        range("0", "9"),
+        "_",
+        "-",
+        "."
+        )) +
+"." +
+between(
+    anyOf(
+        range("a", "z"),
+        range("A", "Z")),
+    2,
+    5) +
+end
+```
 
 ## TODO
-
-- Add examples on readme.
 
 -  Add tokens and syntax tree visualization on the blazor web app. Maybe using [treeview](https://www.w3schools.com/howto/howto_js_treeview.asp) and some JS.
 - Support assignments.
