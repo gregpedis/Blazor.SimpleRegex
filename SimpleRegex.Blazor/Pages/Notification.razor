@@ -1,0 +1,26 @@
+﻿<span class="@fadeClass">	@Text</span>
+
+@code {
+	private string Text { get; set; } = "placeholder";
+	private string fadeClass = "notify-init";
+
+	public async Task Notify(string text)
+	{
+		Text = text;
+		FadeIn();
+		await Task.Delay(800);
+		FadeOut();
+	}
+
+	private void FadeIn()
+	{
+		fadeClass = "notify-show";
+		StateHasChanged();
+	}
+
+	private void FadeOut()
+	{
+		fadeClass = "notify-hide";
+		StateHasChanged();
+	}
+}

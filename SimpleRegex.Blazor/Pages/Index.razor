@@ -31,25 +31,20 @@
 	<hr />
 	<label>Regular expression generated.</label>
 	<hr />
-	<textarea class="output @outputClass" readonly>
-		@targetText
+	<textarea class="output @_outputClass" readonly>
+		@Output
 	</textarea>
 </div>
 
-<button @onclick="CopyToClipboard">Copy</button>
-
 <a class="button" target="_blank" href="https://regex101.com/">regex101</a>
-
-<span class="@fadeClass">	Done!</span>
+<CopyToClipboard Text="@Output"></CopyToClipboard>
 
 @code {
 
 	private DotNetObjectReference<Index> _dotNetHelper;
-	private string targetText = string.Empty;
+	private string _outputClass = "regex";
 
-	private string outputClass = "regex";
-	private string fadeClass = "notify-init";
-	private bool notifyCopy = false;
+	private string Output  { get; set; }
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
@@ -80,39 +75,12 @@ or many(any + quote or boundary)";
 		var compilation = Compiler.Compile(input);
 		Console.WriteLine(input);
 
-		outputClass = compilation.Success ? "regex" : "failure";
-		targetText = compilation.Success ? compilation.Regex : compilation.Exception.Message;
+		Output  = compilation.Success ? compilation.Regex : compilation.Exception.Message;
+		_outputClass = compilation.Success ? "regex" : "failure";
 
-		StateHasChanged(); // Refresh the UI to show the updated value.
-	}
-
-	private async Task CopyToClipboard()
-	{
-		try
-		{
-			await JSRuntime.InvokeVoidAsync("copyToClipboard", targetText);
-			await NotifyCopy();
-		}
-		catch (Exception ex)
-		{
-			Console.WriteLine($"Error: {ex.Message}");
-		}
-	}
-
-	private async Task NotifyCopy()
-	{
-		notifyCopy = true;
-		fadeClass = "notify-show";
-		StateHasChanged();
-
-		await Task.Delay(750);
-
-		fadeClass = "notify-hide";
-		notifyCopy = false;
 		StateHasChanged();
 	}
 
 	public void Dispose() =>
 		_dotNetHelper?.Dispose();
 }
-

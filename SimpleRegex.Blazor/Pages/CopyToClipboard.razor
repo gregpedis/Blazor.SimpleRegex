@@ -1,0 +1,26 @@
+﻿@inject IJSRuntime JSRuntime
+
+<button @onclick="Copy">Copy</button>
+
+<Notification @ref="notification"></Notification>
+
+@code {
+
+	[Parameter]
+	public string Text { get; set; }
+
+	private Notification notification;
+
+	private async Task Copy()
+	{
+		try
+		{
+			await JSRuntime.InvokeVoidAsync("copyToClipboard", Text);
+			await notification.Notify("Done!");
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Error: {ex.Message}");
+		}
+	}
+}
