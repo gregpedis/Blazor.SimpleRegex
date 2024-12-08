@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using SimpleRegex.Parsing.Nodes
 @inject IJSRuntime JSRuntime
 @implements IDisposable
 
@@ -32,19 +33,27 @@
 	<label>Regular expression generated.</label>
 	<hr />
 	<textarea class="output @_outputClass" readonly>
-		@Output
+		@OutputRegex
 	</textarea>
 </div>
 
 <a class="button" target="_blank" href="https://regex101.com/">regex101</a>
-<CopyToClipboard Text="@Output"></CopyToClipboard>
+<CopyToClipboard Text="@OutputRegex"></CopyToClipboard>
+
+<div>
+	<hr />
+	<label>Abstract Syntax Tree generated.</label>
+	<hr />
+	<Tree Root=@OutputTree></Tree>
+</div>
 
 @code {
 
 	private DotNetObjectReference<Index> _dotNetHelper;
 	private string _outputClass = "regex";
 
-	private string Output  { get; set; }
+	private string OutputRegex { get; set; }
+	private Expr OutputTree { get; set; }
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
@@ -75,8 +84,17 @@ or many(any + quote or boundary)";
 		var compilation = Compiler.Compile(input);
 		Console.WriteLine(input);
 
-		Output  = compilation.Success ? compilation.Regex : compilation.Exception.Message;
-		_outputClass = compilation.Success ? "regex" : "failure";
+		if (compilation.Success)
+		{
+			OutputRegex = compilation.Regex;
+			OutputTree = compilation.Tree;
+			_outputClass = "regex";
+		}
+		else
+		{
+			OutputRegex = compilation.Exception.Message;
+			_outputClass = "failure";
+		}
 
 		StateHasChanged();
 	}

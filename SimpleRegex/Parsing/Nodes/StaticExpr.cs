@@ -1,11 +1,14 @@
 ﻿namespace SimpleRegex.Parsing.Nodes;
 
-public class StaticExpr<T> : Expr where T : StaticExpr<T>, new()
+public class StaticExpr : Expr
 {
-	public static T Instance { get; } = new();
-
 	public override string ToString() =>
 		GetType().SimpleName();
+}
+
+public class StaticExpr<T> : StaticExpr where T : StaticExpr<T>, new()
+{
+	public static T Instance { get; } = new();
 }
 
 public class Any : StaticExpr<Any>;

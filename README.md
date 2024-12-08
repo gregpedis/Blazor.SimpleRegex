@@ -218,5 +218,4 @@ end
 
 ## TODO
 
--  Add tokens and syntax tree visualization on the blazor web app. Maybe using [treeview](https://www.w3schools.com/howto/howto_js_treeview.asp) and some JS.
 - Support assignments.

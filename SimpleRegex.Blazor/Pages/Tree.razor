@@ -1,0 +1,137 @@
+﻿@using SimpleRegex.Parsing.Nodes
+@using SimpleRegex.Parsing;
+
+@if (_rootType == ExpressionType.STATIC)
+{
+	<span class="bullet">
+		@Root.ToString()
+	</span>
+}
+@if (_rootType == ExpressionType.UNARY)
+{
+	<li>
+		<span class="caret">@_exprName</span>
+		<ul>
+			<li>
+				<Tree Root="((UnaryExpr)Root).Value"></Tree>
+			</li>
+		</ul>
+	</li>
+}
+
+@if (_rootType == ExpressionType.BINARY_LITERAL_LITERAL)
+{
+	<span class="caret">@_exprName</span>
+	<ul>
+		<li>
+			<Tree Root="((BinaryExpr<Literal, Literal>)Root).Left"></Tree>
+		</li>
+		<li>
+			<Tree Root="((BinaryExpr<Literal, Literal>)Root).Right"></Tree>
+		</li>
+	</ul>
+}
+
+@if (_rootType == ExpressionType.BINARY_EXPR_LITERAL)
+{
+	<span class="caret">@_exprName</span>
+	<ul>
+		<li>
+			<Tree Root="((BinaryExpr<Expr, Literal>)Root).Left"></Tree>
+		</li>
+		<li>
+			<Tree Root="((BinaryExpr<Expr, Literal>)Root).Right"></Tree>
+		</li>
+	</ul>
+}
+
+@if (_rootType == ExpressionType.BINARY_EXPR_INT)
+{
+	<span class="caret">@_exprName</span>
+	<ul>
+		<li>
+			<Tree Root="((BinaryExpr<Expr, int>)Root).Left"></Tree>
+		</li>
+		<li>
+			<span class="tree-number bullet">
+				NUMBER [@(((BinaryExpr<Expr, int>)Root).Right)]
+			</span>
+		</li>
+	</ul>
+}
+
+@if (_rootType == ExpressionType.VARIADIC)
+{
+	<span class="caret">@_exprName</span>
+	<ul>
+		@foreach (var operand in ((VariadicExpr)Root).Operands)
+		{
+			<li>
+				<Tree Root="@operand"></Tree>
+			</li>
+		}
+	</ul>
+}
+
+@if (_rootType == ExpressionType.LITERAL)
+{
+	<span class="tree-literal bullet">
+		@_exprName "@(((Literal)Root).Value)"
+	</span>
+}
+
+@if (_rootType == ExpressionType.BETWEEN)
+{
+	<span class="caret">@_exprName</span>
+	<ul>
+		<li>
+			<Tree Root="((Between)Root).Value"></Tree>
+		</li>
+		<li class="tree-number bullet">
+			MIN [@(((Between)Root).Min)]
+		</li>
+
+		<li class="tree-number bullet">
+			MAX [@(((Between)Root).Max)]
+		</li>
+	</ul>
+}
+
+@code {
+
+	private ExpressionType _rootType;
+	private string _exprName;
+
+	[Parameter]
+	public Expr Root { get; set; }
+
+	protected override void OnParametersSet()
+	{
+		_exprName = Root.GetType().SimpleName();
+		_rootType = Root switch
+		{
+			Literal => ExpressionType.LITERAL,
+			Between => ExpressionType.BETWEEN,
+
+			StaticExpr => ExpressionType.STATIC,
+			UnaryExpr => ExpressionType.UNARY,
+			BinaryExpr<Literal, Literal> => ExpressionType.BINARY_LITERAL_LITERAL,
+			BinaryExpr<Expr, Literal> => ExpressionType.BINARY_EXPR_LITERAL,
+			BinaryExpr<Expr, int> => ExpressionType.BINARY_EXPR_INT,
+			VariadicExpr => ExpressionType.VARIADIC,
+		};
+	}
+
+	private enum ExpressionType
+	{
+		LITERAL,
+		BETWEEN,
+
+		STATIC,
+		UNARY,
+		BINARY_LITERAL_LITERAL,
+		BINARY_EXPR_LITERAL,
+		BINARY_EXPR_INT,
+		VARIADIC,
+	}
+}

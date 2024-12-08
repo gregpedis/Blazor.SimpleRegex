@@ -9,8 +9,6 @@ public class BinaryExpr<TLeft, TRight>(TLeft left, TRight right) : Expr
 		$"{GetType().SimpleName()} ({Left}, {Right})";
 }
 
-public class BinaryExpr(Expr left, Expr right) : BinaryExpr<Expr, Expr>(left, right);
-
 public class NamedCapture(Expr value, Literal name) : BinaryExpr<Expr, Literal>(value, name);
 public class Range(Literal left, Literal right) : BinaryExpr<Literal, Literal>(left, right);
 

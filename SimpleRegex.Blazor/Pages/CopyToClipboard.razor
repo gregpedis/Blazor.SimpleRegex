@@ -2,21 +2,22 @@
 
 <button @onclick="Copy">Copy</button>
 
-<Notification @ref="notification"></Notification>
+<Notification @ref="_notification"></Notification>
 
 @code {
 
 	[Parameter]
 	public string Text { get; set; }
 
-	private Notification notification;
+	private Notification _notification;
 
 	private async Task Copy()
 	{
 		try
 		{
+			// found in copy-to-clipboard.js
 			await JSRuntime.InvokeVoidAsync("copyToClipboard", Text);
-			await notification.Notify("Done!");
+			await _notification.Notify("Done!");
 		}
 		catch (Exception ex)
 		{
