@@ -133,9 +133,6 @@ non_character_term	= any | start | end | boundary | null
 
 - Add examples on readme.
 
-- Link github readme to blazor web app.
-- Move styling to app.css
-- Add some more styling, e.g. red line when there is an error.
-
 -  Add tokens and syntax tree visualization on the blazor web app. Maybe using [treeview](https://www.w3schools.com/howto/howto_js_treeview.asp) and some JS.
 - Support assignments.
+

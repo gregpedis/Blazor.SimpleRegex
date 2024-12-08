@@ -15,7 +15,7 @@
 	This application aims to simplify the use of regular expressions, by implementing a thin wrapper over them.
 	<br />
 	<br />
-	If you are interested in the implementation and the language syntax, click <a href="https://github.com/gregpedis/SimpleRegex/tree/master">here</a>.
+	If you are interested in the implementation and the language syntax, click <a target="_blank" href="https://github.com/gregpedis/SimpleRegex/blob/master/README.md">here</a>.
 </p>
 
 @* INPUT *@
@@ -23,7 +23,7 @@
 	<hr />
 	<label>Insert your expression here.</label>
 	<hr />
-	<div id="editor" style="height: 500px; width: 100%;"></div>
+	<div id="editor" class="editor"></div>
 </div>
 
 @* OUTPUT *@
@@ -31,16 +31,25 @@
 	<hr />
 	<label for="target">Regular expression generated.</label>
 	<hr />
-	<textarea style="border:none; color:#b4b4b4; background-color:#1e1e1e; width:100%" readonly>
+	<textarea class="output @outputClass" readonly>
 		@targetText
 	</textarea>
 </div>
 
+<button @onclick="CopyToClipboard">Copy</button>
+
+<a class="button" target="_blank" href="https://regex101.com/">regex101</a>
+
+<span class="@fadeClass">	Done!</span>
+
 @code {
 
-	// TODO: Extract styling above this to app.css
 	private DotNetObjectReference<Index> _dotNetHelper;
 	private string targetText = string.Empty;
+
+	private string outputClass = "regex";
+	private string fadeClass = "notify-init";
+	private bool notifyCopy = false;
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
@@ -70,10 +79,37 @@ or many(any + quote or boundary)";
 	{
 		var compilation = Compiler.Compile(input);
 		Console.WriteLine(input);
-		var result = compilation.Success ? compilation.Regex : compilation.Exception.Message;
 
-		targetText = result;
+		outputClass = compilation.Success ? "regex" : "failure";
+		targetText = compilation.Success ? compilation.Regex : compilation.Exception.Message;
+
 		StateHasChanged(); // Refresh the UI to show the updated value.
+	}
+
+	private async Task CopyToClipboard()
+	{
+		try
+		{
+			await JSRuntime.InvokeVoidAsync("copyToClipboard", targetText);
+			await NotifyCopy();
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Error: {ex.Message}");
+		}
+	}
+
+	private async Task NotifyCopy()
+	{
+		notifyCopy = true;
+		fadeClass = "notify-show";
+		StateHasChanged();
+
+		await Task.Delay(750);
+
+		fadeClass = "notify-hide";
+		notifyCopy = false;
+		StateHasChanged();
 	}
 
 	public void Dispose() =>
