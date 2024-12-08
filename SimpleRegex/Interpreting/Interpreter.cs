@@ -17,6 +17,18 @@ internal static class Interpreter
 		'|',
 	];
 
+	private static readonly Dictionary<string, Expr> Assignments = [];
+
+	public static string Interpret(Execution execution)
+	{
+		Assignments.Clear();
+		foreach (var assignment in execution.Left)
+		{
+			Interpret(assignment);
+		}
+		return Interpret(execution.Right);
+	}
+
 	public static string Interpret(Expr expression) =>
 		expression switch
 		{
@@ -42,6 +54,7 @@ internal static class Interpreter
 			Range range => Interpret(range),
 
 			Literal literal => Interpret(literal),
+			Identifier identifier => Interpret(identifier),
 
 			Any => ".",
 			Start => "^",
@@ -156,6 +169,14 @@ internal static class Interpreter
 
 	private static string Interpret(Literal literal) =>
 		Escape(literal.Value);
+
+	private static string Interpret(Identifier identifier) =>
+		Assignments.TryGetValue(identifier.Value, out var rhs)
+			? Interpret(rhs)
+			: throw Error($"""Identifier "{identifier.Value}" has not been defined""");
+
+	private static void Interpret(Assignment assignment) =>
+		Assignments[assignment.Left] = assignment.Right;
 
 	#region HELPERS
 	private static string Parenthesize(string value)

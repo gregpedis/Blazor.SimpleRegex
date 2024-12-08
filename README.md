@@ -182,40 +182,35 @@ notAnyOf(
 )
 ```
 
-#### Email Validation
+#### Assignments
 
 ```csharp
 // ^[a-zA-Z0-9_\-\.]+@[a-zA-Z0-9_\-\.]+\.[a-zA-Z]{2,5}$
+alpha = anyof(
+    range("a", "z"),
+    range("A","Z"))
+
+alphanumeric = anyOf(
+        range("a","z"),
+        range("A", "Z"),
+        range("0", "9"),
+        "_",
+        "-",
+        "."
+        )
+
 start +
-many(
-    anyOf(
-        range("a","z"),
-        range("A", "Z"),
-        range("0", "9"),
-        "_",
-        "-",
-        "."
-        )) +
+many(alphanumeric) +
 "@" +
-many(
-    anyOf(
-        range("a","z"),
-        range("A", "Z"),
-        range("0", "9"),
-        "_",
-        "-",
-        "."
-        )) +
+many(alphanumeric) +
 "." +
-between(
-    anyOf(
-        range("a", "z"),
-        range("A", "Z")),
-    2,
-    5) +
+between(alpha, 2, 5) +
 end
 ```
 
 ## TODO
 
-- Support assignments.
+- Add tests for assignments
+- Support range on assignments
+- Add UTs
+- Fix README grammar

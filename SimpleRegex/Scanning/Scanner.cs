@@ -77,6 +77,7 @@ internal class Scanner(string source)
 			case ')': AddToken(TokenType.RIGHT_PAREN); break;
 			case ',': AddToken(TokenType.COMMA); break;
 			case '+': AddToken(TokenType.CONCAT); break;
+			case '=': AddToken(TokenType.EQUALS); break;
 
 			case '"': AddString(); break;
 			case var x when char.IsDigit(x): AddNumber(); break;
@@ -133,15 +134,16 @@ internal class Scanner(string source)
 
 	private void AddIdentifier()
 	{
-		while (IsAlpha(Peek()))
+		while (IsAlphanumeric(Peek()))
 		{
 			Advance();
 		}
 
 		var text = source[start..current];
+
 		var type = RESERVED_KEYWORDS.TryGetValue(text.ToUpperInvariant(), out var reserved)
 			? reserved
-			: throw Error($"Unexpected identifier '{text}'");
+			: TokenType.IDENTIFIER;
 		AddToken(type);
 	}
 
@@ -176,8 +178,11 @@ internal class Scanner(string source)
 		tokens.Add(new Token(type, text, literal, line));
 	}
 
+	private static bool IsAlphanumeric(char c) =>
+		IsAlpha(c) || char.IsAsciiDigit(c);
+
 	private static bool IsAlpha(char c) =>
-		(c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+		char.IsAsciiLetter(c) || c == '_';
 
 	private ScanningException Error(string message) =>
 		new(line, message);

@@ -28,12 +28,18 @@ internal class Parser(List<Token> tokens)
 
 	private int current = 0;
 
-	public Expr ParseExpression()
+	public Execution ParseExecution() =>
+		Parse(Execution);
+
+	public Expr ParseExpression() =>
+		Parse(Or);
+
+	private T Parse<T>(Func<T> calculate)
 	{
-		var expression = Or();
+		var res = calculate();
 		if (IsAtEnd())
 		{
-			return expression;
+			return res;
 		}
 		else
 		{
@@ -42,6 +48,29 @@ internal class Parser(List<Token> tokens)
 	}
 
 	#region EXPRESSIONS
+
+	// execution -> assignments or
+	private Execution Execution() =>
+		new(Assignments(), Or());
+
+	// assignments -> assignment*
+	private List<Assignment> Assignments()
+	{
+		var assignments = new List<Assignment>();
+		while (PeekNext().Type == TokenType.EQUALS)
+		{
+			assignments.Add(Assignment());
+		}
+		return assignments;
+	}
+
+	// assignment -> identifier "=" or
+	private Assignment Assignment()
+	{
+		var identifier = Consume(TokenType.IDENTIFIER, "Expect identifier at the start of assignment");
+		Consume(TokenType.EQUALS, "Expect '=' after identifier");
+		return new(identifier.Lexeme, Or());
+	}
 
 	// or -> concat ( "|" concat )*
 	private Or Or()
@@ -323,6 +352,7 @@ internal class Parser(List<Token> tokens)
 			TokenType.NOT_BOUNDARY => NotBoundary.Instance,
 			TokenType.ANY => Any.Instance,
 			TokenType.NULL => Null.Instance,
+			TokenType.IDENTIFIER => new Identifier(token.Lexeme),
 			_ => throw Error(token, "Expect Term")
 		};
 		Advance();
@@ -332,6 +362,7 @@ internal class Parser(List<Token> tokens)
 	#endregion
 
 	#region HELPERS
+
 	// Anchors like [^, $, \b] are not quantifiable.
 	private static Or VerifyNoAnchor(Token quantifier, Or argument)
 	{
@@ -399,6 +430,9 @@ internal class Parser(List<Token> tokens)
 
 	private Token Peek() =>
 		tokens[current];
+
+	private Token PeekNext() =>
+		tokens[current + 1];
 
 	private Token Previous() =>
 

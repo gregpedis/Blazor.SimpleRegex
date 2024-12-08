@@ -8,7 +8,7 @@
 	</span>
 }
 @if (_rootType == ExpressionType.UNARY)
-{
+{@*
 	<li>
 		<span class="caret">@_exprName</span>
 		<ul>
@@ -16,7 +16,7 @@
 				<Tree Root="((UnaryExpr)Root).Value"></Tree>
 			</li>
 		</ul>
-	</li>
+	</li> *@
 }
 
 @if (_rootType == ExpressionType.BINARY_LITERAL_LITERAL)
@@ -114,7 +114,7 @@
 			Between => ExpressionType.BETWEEN,
 
 			StaticExpr => ExpressionType.STATIC,
-			UnaryExpr => ExpressionType.UNARY,
+			// UnaryExpr => ExpressionType.UNARY,
 			BinaryExpr<Literal, Literal> => ExpressionType.BINARY_LITERAL_LITERAL,
 			BinaryExpr<Expr, Literal> => ExpressionType.BINARY_EXPR_LITERAL,
 			BinaryExpr<Expr, int> => ExpressionType.BINARY_EXPR_INT,

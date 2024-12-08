@@ -33,10 +33,10 @@ public static class Compiler
 	static List<Token> Scan(string input) =>
 		new Scanner(input).ScanTokens();
 
-	static Expr Parse(List<Token> tokens) =>
-		new Parser(tokens).ParseExpression();
+	static Execution Parse(List<Token> tokens) =>
+		new Parser(tokens).ParseExecution();
 
-	static string Interpret(Expr tree) =>
+	static string Interpret(Execution tree) =>
 		Interpreter.Interpret(tree);
 }
 
