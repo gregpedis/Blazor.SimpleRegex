@@ -52,6 +52,7 @@ internal static class Interpreter
 			Word => @"\w",
 			NotWord => @"\W",
 			Boundary => @"\b",
+			NotBoundary => @"\B",
 			NewLine => @"\n",
 			Cr => @"\r",
 			Tab => @"\t",

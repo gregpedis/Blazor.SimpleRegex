@@ -21,6 +21,7 @@ internal class Scanner(string source)
 		{ "WORD" , TokenType.WORD },					// \w
 		{ "NOTWORD" , TokenType.NOT_WORD },				// \W
 		{ "BOUNDARY" , TokenType.BOUNDARY },			// \b
+		{ "NOTBOUNDARY" , TokenType.NOT_BOUNDARY},		// \B
 		{ "NEWLINE" , TokenType.NEWLINE },				// \n
 		{ "NL" , TokenType.NEWLINE },					// \n
 		{ "CR" , TokenType.CR },						// \r

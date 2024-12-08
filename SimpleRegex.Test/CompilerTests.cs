@@ -52,6 +52,7 @@ public class CompilerTests
 	[DataRow("word", "\\w")]
 	[DataRow("notword", "\\W")]
 	[DataRow("boundary", "\\b")]
+	[DataRow("notBoundary", "\\B")]
 	[DataRow("newline", "\\n")]
 	[DataRow("nl", "\\n")]
 	[DataRow("cr", "\\r")]

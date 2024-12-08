@@ -25,4 +25,5 @@ public class Quote : StaticExpr<Quote>;
 public class Start : Anchor<Start>;
 public class End : Anchor<End>;
 public class Boundary : Anchor<Boundary>;
+public class NotBoundary : Anchor<Boundary>;
 

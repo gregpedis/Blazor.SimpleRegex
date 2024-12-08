@@ -35,7 +35,7 @@ window.monacoInterop = {
                         ignoreCase: true,
                         methods: ['maybe', 'maybeMany', 'many', 'exactly', 'atLeast', 'between', 'lazy', 'range', 'anyOf', 'notAnyOf', 'capture', 'match', 'notMatch'],
                         special: ['any', 'start', 'end'],
-                        escaped: ['ws', 'whitespace', 'digit', 'notdigit', 'word', 'boundary', 'newline', 'nl', 'cr', 'tab', 'null', 'quote'],
+                        escaped: ['ws', 'whitespace', 'digit', 'notdigit', 'word', 'notword', 'boundary', 'notboundary', 'newline', 'nl', 'cr', 'tab', 'null', 'quote'],
                         binary: ['or'],
                         operators: /[+]/,
                         tokenizer: {

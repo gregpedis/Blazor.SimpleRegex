@@ -311,7 +311,7 @@ internal class Parser(List<Token> tokens)
 		return term;
 	}
 
-	// non_character_term -> any | start | end | boundary | null
+	// non_character_term -> any | start | end | boundary | notboundary | null
 	private Expr NonCharacterTerm()
 	{
 		var token = Peek();
@@ -320,6 +320,7 @@ internal class Parser(List<Token> tokens)
 			TokenType.START => Start.Instance,
 			TokenType.END => End.Instance,
 			TokenType.BOUNDARY => Boundary.Instance,
+			TokenType.NOT_BOUNDARY => NotBoundary.Instance,
 			TokenType.ANY => Any.Instance,
 			TokenType.NULL => Null.Instance,
 			_ => throw Error(token, "Expect Term")
