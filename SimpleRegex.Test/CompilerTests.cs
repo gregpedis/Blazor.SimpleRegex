@@ -6,37 +6,37 @@ namespace SimpleRegex.Test;
 public class CompilerTests
 {
 	[DataTestMethod]
-	[DataRow("start $", "Unexpected character '$' at line 1.")]
-	[DataRow("""start or "hey""", "Unterminated string at line 1.")]
-	[DataRow("start\nor \n INVALID", "Unexpected identifier 'INVALID' at line 3.")]
-	[DataRow("start /or end", "Expected second '/' at line 1.")]
+	[DataRow("start $", "Unexpected character '$' at line 1")]
+	[DataRow("""start or "hey""", "Unterminated string at line 1")]
+	[DataRow("start /or end", "Expected second '/' at line 1")]
 	public void Compile_ScanningError(string input, string error) =>
-		AssertFailure<ScanningException>(Compiler.Compile(input), $"Scanning Error: {error}");
+		AssertFailure<ScanningException>(Compiler.Compile(input), $"Scanning Error: {error}.");
 
 	[DataTestMethod]
-	[DataRow("digit digit", "Expect EOF at token [DIGIT] 'digit' at line 1.")]
-	[DataRow("lazy(any)", "Expect quantifier after '(' at token [LEFT_PAREN] '(' at line 1.")]
-	[DataRow("exactly(start, 42)", "Expect quantifiable token but got START at token [EXACTLY] 'exactly' at line 1.")]
-	[DataRow("atleast(end, 42)", "Expect quantifiable token but got END at token [AT_LEAST] 'atleast' at line 1.")]
-	[DataRow("between(boundary, 3, 42)", "Expect quantifiable token but got BOUNDARY at token [BETWEEN] 'between' at line 1.")]
-	[DataRow("maybe(start)", "Expect quantifiable token but got START at token [MAYBE] 'maybe' at line 1.")]
-	[DataRow("maybemany(end)", "Expect quantifiable token but got END at token [MAYBE_MANY] 'maybemany' at line 1.")]
-	[DataRow("many(boundary)", "Expect quantifiable token but got BOUNDARY at token [MANY] 'many' at line 1.")]
-	[DataRow("many(notBoundary)", "Expect quantifiable token but got NOTBOUNDARY at token [MANY] 'many' at line 1.")]
-	[DataRow("anyof(start)", "Expect Term at token [START] 'start' at line 1.")]
-	[DataRow("""match(whitespace, "name")""", "Expect ')' after match's argument at token [COMMA] ',' at line 1.")]
-	[DataRow("""notMatch(whitespace, "name")""", "Expect ')' after notMatch's argument at token [COMMA] ',' at line 1.")]
+	[DataRow("digit digit", "Expect EOF at token [DIGIT] 'digit' at line 1")]
+	[DataRow("lazy(any)", "Expect quantifier after '(' at token [LEFT_PAREN] '(' at line 1")]
+	[DataRow("exactly(start, 42)", "Expect quantifiable token but got START at token [EXACTLY] 'exactly' at line 1")]
+	[DataRow("atleast(end, 42)", "Expect quantifiable token but got END at token [AT_LEAST] 'atleast' at line 1")]
+	[DataRow("between(boundary, 3, 42)", "Expect quantifiable token but got BOUNDARY at token [BETWEEN] 'between' at line 1")]
+	[DataRow("maybe(start)", "Expect quantifiable token but got START at token [MAYBE] 'maybe' at line 1")]
+	[DataRow("maybemany(end)", "Expect quantifiable token but got END at token [MAYBE_MANY] 'maybemany' at line 1")]
+	[DataRow("many(boundary)", "Expect quantifiable token but got BOUNDARY at token [MANY] 'many' at line 1")]
+	[DataRow("many(notBoundary)", "Expect quantifiable token but got NOTBOUNDARY at token [MANY] 'many' at line 1")]
+	[DataRow("anyof(start)", "Expect Term at token [START] 'start' at line 1")]
+	[DataRow("""match(whitespace, "name")""", "Expect ')' after match's argument at token [COMMA] ',' at line 1")]
+	[DataRow("""notMatch(whitespace, "name")""", "Expect ')' after notMatch's argument at token [COMMA] ',' at line 1")]
 	public void Compile_ParsingError(string input, string error) =>
-		AssertFailure<ParsingException>(Compiler.Compile(input), $"Parsing Error: {error}");
+		AssertFailure<ParsingException>(Compiler.Compile(input), $"Parsing Error: {error}.");
 
 	[DataTestMethod]
-	[DataRow("""capture("abc", "")""", """Named capture group "(?<>abc)"'s name requires at least one character.""")]
-	[DataRow("""capture("abc", "a-b")""", """Named capture group "(?<a\-b>abc)"'s name can only comprise of ASCII alphanumeric characters (A-Z, a-z, 0-9) and '_'.""")]
-	[DataRow("""anyof("")""", """Character class "[]" requires at least one character.""")]
-	[DataRow("""anyOf(range("aa", "b"))""", """Invalid expression 'aa'. Range's left argument is expected to be a single character.""")]
-	[DataRow("""anyOf(range("a", "bb"))""", """Invalid expression 'bb'. Range's right argument is expected to be a single character.""")]
+	[DataRow("""capture("abc", "")""", """Named capture group "(?<>abc)"'s name requires at least one character""")]
+	[DataRow("""capture("abc", "a-b")""", """Named capture group "(?<a\-b>abc)"'s name can only comprise of ASCII alphanumeric characters (A-Z, a-z, 0-9) and '_'""")]
+	[DataRow("""anyof("")""", """Character class "[]" requires at least one character""")]
+	[DataRow("""anyOf(range("aa", "b"))""", """Invalid expression 'aa'. Range's left argument is expected to be a single character""")]
+	[DataRow("""anyOf(range("a", "bb"))""", """Invalid expression 'bb'. Range's right argument is expected to be a single character""")]
+	[DataRow("start\nor \n INVALID", """Identifier "INVALID" has not been defined""")]
 	public void Compile_InterpreterError(string input, string error) =>
-		AssertFailure<InterpreterException>(Compiler.Compile(input), $"Intepretation Error: {error}");
+		AssertFailure<InterpreterException>(Compiler.Compile(input), $"Intepretation Error: {error}.");
 
 	[DataTestMethod]
 	[DataRow("  \n \n     \"a\" \n \n      \n", "a")]

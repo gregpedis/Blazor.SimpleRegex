@@ -210,7 +210,7 @@ end
 
 ## TODO
 
-- Add tests for assignments
+- Refactor scanner/parser/interpreter
 - Support range on assignments
-- Add UTs
+- Add UTs for assignments
 - Fix README grammar
