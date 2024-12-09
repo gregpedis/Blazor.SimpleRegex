@@ -62,9 +62,26 @@
 			_dotNetHelper = DotNetObjectReference.Create(this);
 
 			var initialValue = @"//This is a valid expression:
-start + between(""hello there"", 42, 69)
-or lazy(exactly(""12"", 3))
-or many(any + quote or boundary)";
+alpha = anyof(
+    range(""a"", ""z""),
+    range(""A"",""Z""))
+
+alphanumeric = anyOf(
+        range(""a"",""z""),
+        range(""A"", ""Z""),
+        range(""0"", ""9""),
+        ""_"",
+        ""-"",
+        "".""
+        )
+
+start +
+many(alphanumeric) +
+""@"" +
+many(alphanumeric) +
+""."" +
+between(alpha, 2, 5) +
+end";
 
 			// found in monaco-editor.js
 			await JSRuntime.InvokeVoidAsync(

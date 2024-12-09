@@ -214,3 +214,4 @@ end
 - Support range on assignments
 - Add UTs for assignments
 - Fix README grammar
+- Add a de-sugarizer after the parser

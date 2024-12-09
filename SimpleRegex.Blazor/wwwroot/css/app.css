@@ -97,3 +97,19 @@ ul {
 .tree-literal {
     color: #ce9178;
 }
+
+.tree-identifier {
+    color: #d7b96e;
+}
+
+.tree-assignment {
+    color: deepskyblue;
+}
+
+.tree-expression {
+    color: lightblue;
+}
+
+.tree-execution {
+    color: dodgerblue;
+}
