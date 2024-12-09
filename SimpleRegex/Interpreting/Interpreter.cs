@@ -19,19 +19,11 @@ internal static class Interpreter
 
 	private static readonly Dictionary<string, Expr> Assignments = [];
 
-	public static string Interpret(Execution execution)
-	{
-		Assignments.Clear();
-		foreach (var assignment in execution.Left)
-		{
-			Interpret(assignment);
-		}
-		return Interpret(execution.Right);
-	}
-
 	public static string Interpret(Expr expression) =>
 		expression switch
 		{
+			Execution execution => Interpret(execution),
+
 			Or or => Interpret(or),
 			Concat concat => Interpret(concat),
 
@@ -74,6 +66,16 @@ internal static class Interpreter
 
 			_ => throw Error($"Invalid expression '{expression}'")
 		};
+
+	private static string Interpret(Execution execution)
+	{
+		Assignments.Clear();
+		foreach (var assignment in execution.Left)
+		{
+			Interpret(assignment);
+		}
+		return Interpret(execution.Right);
+	}
 
 	private static string Interpret(Or or) =>
 		string.Join('|', or.Operands.Select(Interpret));

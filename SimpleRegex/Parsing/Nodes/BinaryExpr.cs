@@ -9,7 +9,21 @@ public class BinaryExpr<TLeft, TRight>(TLeft left, TRight right) : Expr
 		$"{GetType().SimpleName()} ({Left}, {Right})";
 }
 
-public class Execution(List<Assignment> assignments, Expr expression) : BinaryExpr<List<Assignment>, Expr>(assignments, expression);
+public class Execution(List<Assignment> assignments, Expr expression) : BinaryExpr<List<Assignment>, Expr>(assignments, expression)
+{
+	public override string ToString()
+	{
+		var left = string.Join(Environment.NewLine, assignments.Select(x => x.ToString()));
+		return $"""
+			{GetType().SimpleName()}
+			{left}
+
+			{Right}
+			""";
+	}
+}
+
+
 public class Assignment(string identifier, Expr value) : BinaryExpr<string, Expr>(identifier, value);
 
 public class NamedCapture(Expr value, Literal name) : BinaryExpr<Expr, Literal>(value, name);

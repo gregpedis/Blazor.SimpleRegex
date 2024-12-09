@@ -211,7 +211,8 @@ end
 ## TODO
 
 - Refactor scanner/parser/interpreter
+- Refactor compiler and parser to get both the sugarized and desugarized trees on the compilation result
+- Make blazor able to show both trees
 - Support range on assignments
 - Add UTs for assignments
 - Fix README grammar
-- Add a de-sugarizer after the parser

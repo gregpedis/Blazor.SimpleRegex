@@ -28,15 +28,9 @@ internal class Parser(List<Token> tokens)
 
 	private int current = 0;
 
-	public Execution ParseExecution() =>
-		Parse(Execution);
-
-	public Expr ParseExpression() =>
-		Parse(Or);
-
-	private T Parse<T>(Func<T> calculate)
+	public Expr Parse()
 	{
-		var res = calculate();
+		var res = Execution();
 		if (IsAtEnd())
 		{
 			return res;
@@ -50,8 +44,15 @@ internal class Parser(List<Token> tokens)
 	#region EXPRESSIONS
 
 	// execution -> assignments or
-	private Execution Execution() =>
-		new(Assignments(), Or());
+	private Expr Execution()
+	{
+		var assignments = Assignments();
+		var expression = Or();
+
+		return assignments.Count > 0
+			? new Execution(assignments, expression)
+			: expression;
+	}
 
 	// assignments -> assignment*
 	private List<Assignment> Assignments()
@@ -73,25 +74,40 @@ internal class Parser(List<Token> tokens)
 	}
 
 	// or -> concat ( "|" concat )*
-	private Or Or()
+	private Expr Or()
 	{
 		var or = new Or([Concat()]);
 		while (Match(TokenType.OR))
 		{
 			or.Operands.Add(Concat());
 		}
-		return or;
+		if (or.Operands.Count == 1)
+		{
+			return or.Operands[0];
+		}
+		else
+		{
+			return or;
+		}
 	}
 
 	// concat -> lazy ( "+" lazy )*
-	private Concat Concat()
+	private Expr Concat()
 	{
 		var concat = new Concat([Lazy()]);
 		while (Match(TokenType.CONCAT))
 		{
 			concat.Operands.Add(Lazy());
 		}
-		return concat;
+
+		if (concat.Operands.Count == 1)
+		{
+			return concat.Operands[0];
+		}
+		else
+		{
+			return concat;
+		}
 	}
 
 	// lazy -> "lazy" "(" quantifier ")" | quantifier | factor
@@ -364,13 +380,11 @@ internal class Parser(List<Token> tokens)
 	#region HELPERS
 
 	// Anchors like [^, $, \b] are not quantifiable.
-	private static Or VerifyNoAnchor(Token quantifier, Or argument)
+	private static Expr VerifyNoAnchor(Token quantifier, Expr argument)
 	{
-		if (argument.Operands[0] is Concat concat
-			&& concat.Operands[0] is { } anchor
-			&& anchor is IAnchor)
+		if (argument is IAnchor)
 		{
-			throw Error(quantifier, $"Expect quantifiable token but got {anchor}");
+			throw Error(quantifier, $"Expect quantifiable token but got {argument}");
 		}
 		else
 		{
