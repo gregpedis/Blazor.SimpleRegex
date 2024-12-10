@@ -104,6 +104,9 @@ quote	        => ""
 The language accepts expressions that match the following grammar in [EBNF](https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form) notation:
 
 ```ebnf
+execution = assignments expression
+assignments = assignment*
+assignment = identifier "=" or
 expression              = or
 or			= concat ("|" concat)*
 concat			= lazy ("+" lazy)*
@@ -122,7 +125,7 @@ anyof_arg		= range | character_term
 range			= "range" "(" literal "," literal ")"
 term			= character_term | non_character_term
 character_term		= ws | digit | notdigit | word | notWord | nl | cr | tab | quote | literal
-non_character_term	= any | start | end | boundary | null
+non_character_term	= any | start | end | boundary | null | identifier
 ```
 
 ## Examples
@@ -211,8 +214,6 @@ end
 ## TODO
 
 - Refactor scanner/parser/interpreter
-- Refactor compiler and parser to get both the sugarized and desugarized trees on the compilation result
-- Make blazor able to show both trees
 - Support range on assignments
 - Add UTs for assignments
-- Fix README grammar
+- Refactor Blazor UI to show the tree on the side. Maybe use flexbox or something.

@@ -356,7 +356,7 @@ internal class Parser(List<Token> tokens)
 		return term;
 	}
 
-	// non_character_term -> any | start | end | boundary | notboundary | null
+	// non_character_term -> any | start | end | boundary | notboundary | null | identifier
 	private Expr NonCharacterTerm()
 	{
 		var token = Peek();
