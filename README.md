@@ -214,5 +214,5 @@ end
 ## TODO
 
 - Refactor scanner/parser/interpreter
-- Support range on assignments
+- Support everything on assignments, e.g. identifier inside a lazy, range inside an anyOf, etc.
 - Add UTs for assignments
