@@ -104,9 +104,9 @@ quote	        => ""
 The language accepts expressions that match the following grammar in [EBNF](https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form) notation:
 
 ```ebnf
-execution = assignments expression
-assignments = assignment*
-assignment = identifier "=" or
+execution               = assignments expression
+assignments             = assignment*
+assignment              = identifier "=" or
 expression              = or
 or			= concat ("|" concat)*
 concat			= lazy ("+" lazy)*
