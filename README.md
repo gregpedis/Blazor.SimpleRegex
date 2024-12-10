@@ -216,4 +216,3 @@ end
 - Refactor scanner/parser/interpreter
 - Support range on assignments
 - Add UTs for assignments
-- Refactor Blazor UI to show the tree on the side. Maybe use flexbox or something.

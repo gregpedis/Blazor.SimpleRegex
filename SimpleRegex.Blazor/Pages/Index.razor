@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using SimpleRegex.Blazor.Components
 @using SimpleRegex.Parsing.Nodes
 @inject IJSRuntime JSRuntime
 @implements IDisposable
@@ -19,32 +20,42 @@
 	If you are interested in the implementation and the language syntax, click <a target="_blank" href="https://github.com/gregpedis/SimpleRegex/blob/master/README.md">here</a>.
 </p>
 
-@* INPUT *@
-<div>
-	<hr />
-	<label>Insert your expression here.</label>
-	<hr />
-	<div id="editor" class="editor"></div>
-</div>
 
-@* OUTPUT *@
-<div>
-	<hr />
-	<label>Regular expression generated.</label>
-	<hr />
-	<textarea class="output @_outputClass" readonly>
-		@OutputRegex
-	</textarea>
-</div>
+<div class="container">
 
-<a class="button" target="_blank" href="https://regex101.com/">regex101</a>
-<CopyToClipboard Text="@OutputRegex"></CopyToClipboard>
+	<div class="row">
+		@* LEFT *@
+		<div class="col-9 left-column">
 
-<div>
-	<hr />
-	<label>Abstract Syntax Tree generated.</label>
-	<hr />
-	<Tree Root=@OutputTree></Tree>
+			@* INPUT *@
+			<div>
+				<hr />
+				<label>Insert your expression here.</label>
+				<hr />
+				<div id="editor" class="editor"></div>
+			</div>
+
+			@* OUTPUT *@
+			<div>
+				<hr />
+				<label>Regular expression generated.</label>
+				<hr />
+				<textarea class="output @_outputClass" readonly>@OutputRegex</textarea>
+			</div>
+
+			@* BUTTONS *@
+			<a class="button" target="_blank" href="https://regex101.com/">regex101</a>
+			<CopyToClipboard Text="@OutputRegex"></CopyToClipboard>
+		</div>
+
+		@* RIGHT *@
+		<div class="col-3">
+			<hr />
+			<label>Abstract Syntax Tree</label>
+			<hr />
+			<Tree Root=@OutputTree></Tree>
+		</div>
+	</div>
 </div>
 
 @code {
