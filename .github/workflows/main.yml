@@ -1,10 +1,7 @@
-name: github pages
+name: Build and Deploy to VPS
 
 on:
   push:
-    branches:
-      - master
-  pull_request:
     branches:
       - master
 
@@ -35,7 +32,7 @@ jobs:
         run: dotnet sonarscanner begin /k:"gregpedis_simpleregex" /o:"gregpedis" /d:sonar.branch.name="main" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml
 
       - name: Publish .NET Core Project
-        run: dotnet publish SimpleRegex.Blazor/SimpleRegex.Blazor.csproj -c:Release -p:GHPages=true -o release --nologo
+        run: dotnet publish SimpleRegex.Blazor/SimpleRegex.Blazor.csproj -c Release -o published
 
       - name: ls wwwroot
         run: ls release/wwwroot
@@ -46,9 +43,12 @@ jobs:
       - name: scanner end
         run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
-      - name: commit wwwroot to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@3.7.1
+      - name: Deploy with rsync over SSH
+        uses: burnett01/rsync-deployments@5.2
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages
-          FOLDER: release/wwwroot
+          switches: -avz --delete
+          path: published/
+          remote_path: /var/www/simple-regex
+          remote_host: ${{ secrets.VPS_HOST }}
+          remote_user: ${{ secrets.VPS_USER }}
+          remote_key: ${{ secrets.VPS_SSH_KEY }}
