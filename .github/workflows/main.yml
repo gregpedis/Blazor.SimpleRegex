@@ -34,9 +34,6 @@ jobs:
       - name: Publish .NET Core Project
         run: dotnet publish SimpleRegex.Blazor/SimpleRegex.Blazor.csproj -c Release -o published
 
-      - name: ls wwwroot
-        run: ls release/wwwroot
-
       - name: Test
         run: dotnet-coverage collect "dotnet test" -f xml -o "coverage.xml"
 
