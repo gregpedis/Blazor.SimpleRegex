@@ -1,34 +1,16 @@
-h1:focus {
-    outline: none;
-}
-
-.content {
-    padding-top: 1.1rem;
-}
-
-html, body {
-    font-family: 'Cascadia Code', Helvetica, Arial, sans-serif;
-    background-color: #0f0f0f;
-    color: darkgreen;
-}
-
-h1 {
-    color: green;
-}
-
 .left-column {
-    border-right: 1px solid darkgreen; /* Vertical separator */
-    padding-right: 10px; /* Optional spacing */
+    /* Vertical separator */
+    border-right: 1px solid darkgreen;
+    /* Optional spacing */
+    padding-right: 10px;
 }
 
 /* INPUT */
-
 .editor {
     height: 600px;
 }
 
 /* OUPUT */
-
 .output {
     border: none;
     background-color: #1e1e1e;
@@ -43,22 +25,7 @@ h1 {
     color: lawngreen;
 }
 
-/* COPY BUTTON */
-
-button, a.button {
-    padding: 5px 15px;
-    background-color: #1e1e1e;
-    color: green;
-    border: none;
-    cursor: pointer;
-}
-
-    button:hover, a.button:hover {
-        background-color: #2e2e2e;
-    }
-
 /* NOTIFICATION */
-
 .notify-init {
     opacity: 0;
 }
@@ -76,7 +43,6 @@ button, a.button {
 }
 
 /* TREE */
-
 ul {
     list-style-type: none;
 }
